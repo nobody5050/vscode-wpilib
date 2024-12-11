@@ -1,32 +1,54 @@
-'use strict';
+"use strict";
 
-import * as fs from 'fs';
-import * as fetch from 'node-fetch';
-import * as path from 'path';
-import { mkdirpAsync } from './utilities';
+import * as fs from "fs";
+import * as fetch from "node-fetch";
+import * as path from "path";
+import { mkdirpAsync } from "./utilities";
 
 const FILE_DOWNLOAD_TIMEOUT = 30000; // 30 seconds
 
 export async function downloadTextFile(uri: string): Promise<string> {
-  const response = await fetch.default(uri, {
-    timeout: 5000,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 5000);
+  try {
+    const response = await fetch.default(uri, {
+      signal: controller.signal,
+    });
 
-  if (response === undefined) {
-    throw new Error('Failed to fetch URI: ' + uri);
+    if (response === undefined) {
+      throw new Error("Failed to fetch URI: " + uri);
+    }
+
+    if (!response.ok) {
+      throw new fetch.FetchError(
+        response.status.toString(10),
+        response.statusText
+      );
+    }
+
+    return response.text();
+  } catch (error) {
+    if (error instanceof fetch.AbortError) {
+      throw new Error("Failed to fetch URI: " + uri);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  if (!response.ok) {
-    throw new fetch.FetchError(response.status.toString(10), response.statusText);
-  }
-
-  return response.text();
 }
 
-export async function downloadFileToStream(url: string, destPath: string): Promise<string> {
+export async function downloadFileToStream(
+  url: string,
+  destPath: string
+): Promise<string> {
   const res = await fetch.default(url);
   if (!res.ok) {
-    return Promise.reject({reason: 'Initial error downloading file', meta: {url, error: new Error(res.statusText)}});
+    return Promise.reject({
+      reason: "Initial error downloading file",
+      meta: { url, error: new Error(res.statusText) },
+    });
   }
 
   await mkdirpAsync(path.dirname(destPath));
@@ -36,29 +58,30 @@ export async function downloadFileToStream(url: string, destPath: string): Promi
 
   return new Promise<string>((resolve, reject) => {
     const errorHandler = (error: unknown) => {
-      reject({reason: 'Unable to download file', meta: {url, error}});
+      reject({ reason: "Unable to download file", meta: { url, error } });
     };
 
-    res.body
-      .on('error', errorHandler)
-      .pipe(stream);
+    res.body?.on("error", errorHandler).pipe(stream);
 
     stream
-      .on('open', () => {
+      .on("open", () => {
         timer = setTimeout(() => {
           stream.close();
-          reject({reason: 'Timed out downloading file', meta: {url}});
+          reject({ reason: "Timed out downloading file", meta: { url } });
         }, FILE_DOWNLOAD_TIMEOUT);
       })
-      .on('error', errorHandler)
-      .on('finish', () => {
+      .on("error", errorHandler)
+      .on("finish", () => {
         resolve(destPath);
       });
-  }).then((localFolder) => {
-    clearTimeout(timer);
-    return localFolder;
-  }, (err) => {
-    clearTimeout(timer);
-    return Promise.reject(err);
-  });
+  }).then(
+    (localFolder) => {
+      clearTimeout(timer);
+      return localFolder;
+    },
+    (err) => {
+      clearTimeout(timer);
+      return Promise.reject(err);
+    }
+  );
 }

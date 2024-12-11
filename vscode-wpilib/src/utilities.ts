@@ -1,6 +1,7 @@
 'use strict';
+import * as fsAsync from 'fs/promises';
 import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
+import { mkdirp } from 'mkdirp';
 import * as ncp from 'ncp';
 import * as path from 'path';
 import * as util from 'util';
@@ -53,19 +54,19 @@ export async function getPackageName(): Promise<string | undefined> {
   return packageName;
 }
 
-export const statAsync = util.promisify(fs.stat);
+export const statAsync = fsAsync.stat;
 
-export const readFileAsync = util.promisify(fs.readFile);
+export const readFileAsync = fsAsync.readFile;
 
-export const writeFileAsync = util.promisify(fs.writeFile);
+export const writeFileAsync = fsAsync.writeFile;
 
-export const copyFileAsync = util.promisify(fs.copyFile);
+export const copyFileAsync = fsAsync.copyFile;
 
-export const mkdirAsync = util.promisify(fs.mkdir);
+export const mkdirAsync = fsAsync.mkdir;
 
 export const existsAsync = util.promisify(fs.exists);
 
-export const deleteFileAsync = util.promisify(fs.unlink);
+export const deleteFileAsync = fsAsync.unlink;
 
 export const mkdirpAsync = mkdirp;
 

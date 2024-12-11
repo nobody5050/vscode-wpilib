@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
-import * as glob from 'glob';
+import { glob } from 'glob';
 import * as path from 'path';
 import { readFileAsync } from '../utilities';
 
@@ -23,20 +23,7 @@ export async function ImportUpdate(srcDir: string, updateFile: string): Promise<
 
   // Enumerate through each updater
   for (const updater of toUpdateParsed) {
-    const toUpdateFiles = await new Promise<string[]>((resolve, reject) => {
-      glob(updater.fileMatcher, {
-        cwd: srcDir,
-        nodir: true,
-        nomount: true,
-      }, (err, matches) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(matches);
-        }
-      });
-    });
-
+    const toUpdateFiles = await glob(updater.fileMatcher, { cwd: srcDir, nodir: true });
     const promiseArray: Promise<void>[] = [];
 
     for (const filePath of toUpdateFiles) {

@@ -16,6 +16,8 @@
     "activationEvents": [
         "workspaceContains:.wpilib/wpilib_preferences.json",
         "workspaceContains:build/vscodeconfig.json",
+        "onCommand:calicoColors.addColor",
+        "onCommand:calicoColors.clearColors",
         "onCommand:wpilibcore.startRioLog",
         "onCommand:wpilibcore.setTeamNumber",
         "onCommand:wpilibcore.startTool",
@@ -58,14 +60,14 @@
     "main": "./out/extension",
     "contributes": {
         "viewsContainers": {
-			"activitybar": [
-				{
-					"id": "wpilib-vendordeps",
-					"title": "WPILib Vendor Dependencies",
-					"icon": "media/wpilib.png"
-				}
-			]
-		},
+            "activitybar": [
+                {
+                    "id": "wpilib-vendordeps",
+                    "title": "WPILib Vendor Dependencies",
+                    "icon": "media/wpilib.png"
+                }
+            ]
+        },
         "untrustedWorkspaces": {
             "supported": "limited",
             "description": "%wpilibcore.untrustedWorkspace.title%"
@@ -178,16 +180,16 @@
         },
         "commands": [
             {
-				"command": "calicoColors.addColor",
-				"category": "Calico Colors",
-				"title": "Add Color"
-			},
-			{
-				"command": "calicoColors.clearColors",
-				"category": "Calico Colors",
-				"title": "Clear Colors",
-				"icon": "$(clear-all)"
-			},
+                "command": "calicoColors.addColor",
+                "category": "Calico Colors",
+                "title": "Add Color"
+            },
+            {
+                "command": "calicoColors.clearColors",
+                "category": "Calico Colors",
+                "title": "Clear Colors",
+                "icon": "$(clear-all)"
+            },
             {
                 "command": "wpilibcore.startRioLog",
                 "title": "%wpilibcore.startRioLog.title%",
@@ -428,12 +430,12 @@
             ],
             "wpilib-vendordeps": [
                 {
-					"type": "webview",
-					"id": "wpilib.dependencyView",
-					"name": "WPILib Vendor Dependencies",
+                    "type": "webview",
+                    "id": "wpilib.dependencyView",
+                    "name": "WPILib Vendor Dependencies",
                     "icon": "media/wpilib.png"
-				}
-			]
+                }
+            ]
         },
         "keybindings": [
             {
@@ -532,56 +534,56 @@
         "vscePackage": "vsce package"
     },
     "devDependencies": {
-        "@types/glob": "^7.1.3",
-        "@types/micromatch": "^4.0.1",
-        "@types/mkdirp": "^1.0.1",
-        "@types/mocha": "^8.0.3",
-        "@types/ncp": "^2.0.4",
-        "@types/node": "^10.2.0",
-        "@types/node-fetch": "^2.5.7",
+        "@types/glob": "8.1.0",
+        "@types/micromatch": "4.0.9",
+        "@types/mocha": "10.0.10",
+        "@types/ncp": "2.0.8",
+        "@types/node": "20.17.9",
+        "@types/node-fetch": "3.0.2",
         "@types/triple-beam": "^1.3.1",
         "@types/vscode": "1.57.0",
-        "@types/xml2js": "^0.4.5",
-        "@typescript-eslint/eslint-plugin": "^6.15.0",
-        "@typescript-eslint/parser": "^6.15.0",
-        "@vscode/vsce": "^2.20.1",
-        "copy-webpack-plugin": "^6.1.1",
-        "del": "^6.0.0",
-        "eslint": "^8.56.0",
+        "@types/xml2js": "0.4.14",
+        "@typescript-eslint/eslint-plugin": "^8.18.0",
+        "@typescript-eslint/parser": "^8.18.0",
+        "@vscode/vsce": "3.2.1",
+        "copy-webpack-plugin": "^12.0.2",
+        "del": "8.0.0",
+        "eslint": "^9.16.0",
         "event-stream": "^4.0.1",
-        "gulp": "^4.0.2",
-        "gulp-filter": "^6.0.0",
-        "gulp-json-transform": "^0.4.7",
-        "gulp-sourcemaps": "^2.6.5",
+        "gulp": "5.0.0",
+        "gulp-filter": "9.0.1",
+        "gulp-json-transform": "0.5.0",
+        "gulp-sourcemaps": "3.0.0",
         "gulp-typescript": "^5.0.1",
         "gulp-yaml": "^2.0.4",
-        "mocha": "^10.2.0",
+        "mocha": "11.0.2",
         "rmdir-cli": "^2.0.6",
         "run-sequence": "^2.2.1",
-        "ts-loader": "^8.4.0",
-        "ts-node": "^9.1.1",
-        "typescript": "^3.9.5",
+        "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.2",
         "vscode-nls-dev": "^4.0.4",
-        "webpack": "4.47.0",
-        "webpack-cli": "^3.3.12"
+        "webpack": "^5.97.1",
+        "webpack-cli": "^5.1.4"
     },
     "dependencies": {
         "extract-zip": "^2.0.1",
-        "glob": "^7.1.6",
+        "glob": "^11.0.0",
         "java-properties": "^1.0.2",
-        "jsonc-parser": "^2.3.1",
-        "logform": "^2.2.0",
-        "micromatch": "^4.0.2",
-        "mkdirp": "^1.0.4",
+        "jsonc-parser": "^3.3.1",
+        "logform": "^2.7.0",
+        "micromatch": "^4.0.8",
+        "mkdirp": "^3.0.1",
         "ncp": "^2.0.0",
-        "node-fetch": "^2.6.1",
-        "triple-beam": "^1.3.0",
+        "node-fetch": "^3.3.2",
+        "timers-browserify": "^2.0.12",
+        "triple-beam": "^1.4.1",
         "vscode-cpptools": "^6.1.0",
-        "vscode-jsonrpc": "^8.1.0",
+        "vscode-jsonrpc": "8.2.1",
         "vscode-nls": "^5.2.0",
         "vscode-wpilibapi": "^2021.1.1",
-        "winston": "^3.3.3",
-        "winston-transport": "^4.4.0",
+        "winston": "3.17.0",
+        "winston-transport": "^4.9.0",
         "wpilib-riolog": "^0.2.0",
         "xml2js": "^0.6.2"
     },

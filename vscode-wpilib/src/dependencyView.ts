@@ -418,8 +418,14 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
   }
 
   protected async loadFileFromUrl(url: string): Promise<IJsonList[]> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 5000);
+
+    try {
     const response = await fetch.default(url, {
-      timeout: 5000,
+      signal: controller.signal,
     });
     if (response === undefined) {
       throw new Error('Failed to fetch file');
@@ -435,6 +441,14 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
     } else {
       throw new Error('Bad status ' + response.status);
     }
+  } catch (error) {
+    if (error instanceof fetch.AbortError) {
+      throw new Error('Failed to fetch file');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
   }
 
   private isJsonList(jsonDepList: IJsonList[]): jsonDepList is IJsonList[] {

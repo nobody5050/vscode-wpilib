@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as glob from 'glob';
+import {glob} from 'glob';
 import * as path from 'path';
 import { localize as i18n } from '../locale';
 import { logger } from '../logger';
@@ -145,20 +145,12 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
     if (fromTemplateTestFolder !== undefined) {
       await ncpAsync(fromTemplateTestFolder, testPath);
     }
-
-    const files = await new Promise<string[]>((resolve, reject) => {
-      glob('**/*{.java,.gradle}', {
-        cwd: codePath,
-        nodir: true,
-        nomount: true,
-      }, (err, matches) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(matches);
-        }
-      });
+    const files = await glob("**/*{.java,.gradle}", 
+    {
+      cwd: codePath, 
+      nodir: true, 
     });
+
 
     // Package replace inside the template
 
@@ -200,19 +192,10 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
     }
 
     if (fromTemplateTestFolder !== undefined) {
-      const testFiles = await new Promise<string[]>((resolve, reject) => {
-        glob('**/*{.java,.gradle}', {
-          cwd: testPath,
-          nodir: true,
-          nomount: true,
-        }, (err, matches) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(matches);
-          }
-        });
-      });
+      const testFiles = await glob("**/*{.java,.gradle}", {
+        cwd: testPath,
+        nodir: true,
+      })
 
       for (const f of testFiles) {
         const file = path.join(testPath, f);

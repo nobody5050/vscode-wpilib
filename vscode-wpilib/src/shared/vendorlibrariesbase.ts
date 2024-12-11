@@ -125,8 +125,14 @@ export class VendorLibrariesBase {
   }
 
   protected async loadFileFromUrl(url: string): Promise<IJsonDependency> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 5000);
+
+    try {
     const response = await fetch.default(url, {
-      timeout: 5000,
+      signal: controller.signal,
     });
     if (response === undefined) {
       throw new Error('Failed to fetch file');
@@ -142,5 +148,13 @@ export class VendorLibrariesBase {
     } else {
       throw new Error('Bad status ' + response.status);
     }
+  } catch (err) {
+    if (err instanceof fetch.AbortError) {
+      throw new Error('Failed to fetch file');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  };
   }
 }

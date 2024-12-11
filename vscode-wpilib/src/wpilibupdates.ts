@@ -180,9 +180,14 @@ export class WPILibUpdates {
 
   private async checkForRemoteGradleRIOUpdate(currentVersion: string): Promise<string | undefined> {
     const metaDataUrl = 'https://plugins.gradle.org/m2/edu/wpi/first/GradleRIO/maven-metadata.xml';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 5000);
+
     try {
       const response = await fetch.default(metaDataUrl, {
-        timeout: 5000,
+        signal: controller.signal
       });
       if (response === undefined) {
         logger.warn('failed to fetch URL: ' + metaDataUrl);
@@ -223,8 +228,14 @@ export class WPILibUpdates {
         return undefined;
       }
     } catch (err) {
+      if (err instanceof fetch.AbortError) {
+        throw new Error("Failed to fetch URI: " + metaDataUrl);
+        return undefined;
+      }
       logger.warn('remote gradlerio exception', err);
       return undefined;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
