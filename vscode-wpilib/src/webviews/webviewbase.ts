@@ -3,7 +3,8 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { loadLocaleFile } from '../locale';
-import { extensionContext, readFileAsync } from '../utilities';
+import { extensionContext } from '../utilities';
+import { readFile } from 'fs/promises';
 
 export abstract class WebViewBase {
   protected html: string = '';
@@ -25,7 +26,7 @@ export abstract class WebViewBase {
     scriptPath?: string,
     localeDomains?: string[]
   ): Promise<void> {
-    this.html = await readFileAsync(htmlPath, 'utf8');
+    this.html = await readFile(htmlPath, 'utf8');
 
     if (scriptPath) {
       this.scriptPath = scriptPath;
@@ -40,7 +41,9 @@ export abstract class WebViewBase {
 
     localeDomains.forEach((domain) => {
       this.html +=
-        `\r\n<script data-locale data-domain="${domain}"${defaultDomain === domain ? ' data-default-domain' : ''} type="application/json">` +
+        `\r\n<script data-locale data-domain="${domain}"${
+          defaultDomain === domain ? ' data-default-domain' : ''
+        } type="application/json">` +
         JSON.stringify(loadLocaleFile(domain)) +
         '</script>\r\n';
     });

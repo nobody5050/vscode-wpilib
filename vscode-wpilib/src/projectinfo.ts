@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { IExternalAPI } from 'vscode-wpilibapi';
 import { logger } from './logger';
-import { extensionContext, readFileAsync } from './utilities';
+import { extensionContext } from './utilities';
 import { VendorLibraries } from './vendorlibraries';
 import { WPILibUpdates } from './wpilibupdates';
 import { findJdkPath, getJavaVersion } from './jdkdetector';
@@ -171,7 +171,7 @@ Vendor Libraries:
       extensionContext.extensionPath,
       'package.json'
     );
-    const packageJson = await readFileAsync(extensionPackageJson, 'utf8');
+    const packageJson = await readFile(extensionPackageJson, 'utf8');
     const currentVsCodeVersion: string = json.parse(packageJson).version;
 
     const projectInfo: IProjectInfo = {

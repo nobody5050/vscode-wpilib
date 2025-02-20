@@ -4,13 +4,10 @@ import * as fetch from 'node-fetch';
 import * as path from 'path';
 import { logger } from '../logger';
 import {
-  deleteFileAsync,
   existsAsync,
-  mkdirp,
-  readdirAsync,
-  readFileAsync,
-  writeFileAsync,
 } from '../utilities';
+import { readdir, unlink, readFile, writeFile } from 'fs/promises';
+import { mkdirp } from 'mkdirp';
 import { IUtilitiesAPI } from '../wpilibapishim';
 
 export interface IJsonDependency {
@@ -76,14 +73,14 @@ export class VendorLibrariesBase {
     if (!dirExists) {
       await mkdirp(url);
       // Directly write file
-      await writeFileAsync(
+      await writeFile(
         path.join(url, dep.fileName),
         JSON.stringify(dep, null, 4)
       );
       return true;
     }
 
-    const files = await readdirAsync(url);
+    const files = await readdir(url);
 
     for (const file of files) {
       const fullPath = path.join(url, file);
@@ -91,7 +88,7 @@ export class VendorLibrariesBase {
       if (result !== undefined) {
         if (result.uuid === dep.uuid) {
           if (override) {
-            await deleteFileAsync(fullPath);
+            await unlink(fullPath);
             break;
           } else {
             return false;
@@ -100,7 +97,7 @@ export class VendorLibrariesBase {
       }
     }
 
-    await writeFileAsync(
+    await writeFile(
       path.join(url, dep.fileName),
       JSON.stringify(dep, null, 4)
     );
@@ -115,7 +112,7 @@ export class VendorLibrariesBase {
 
   protected async readFile(file: string): Promise<IJsonDependency | undefined> {
     try {
-      const jsonContents = await readFileAsync(file, 'utf8');
+      const jsonContents = await readFile(file, 'utf8');
       const dep = JSON.parse(jsonContents);
 
       if (isJsonDependency(dep)) {
@@ -131,7 +128,7 @@ export class VendorLibrariesBase {
 
   protected async getDependencies(dir: string): Promise<IJsonDependency[]> {
     try {
-      const files = await readdirAsync(dir);
+      const files = await readdir(dir);
 
       const promises: Promise<IJsonDependency | undefined>[] = [];
 

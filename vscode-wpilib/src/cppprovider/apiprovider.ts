@@ -13,7 +13,8 @@ import {
 import { IExecuteAPI, IExternalAPI, IPreferences } from 'vscode-wpilibapi';
 import { logger } from '../logger';
 import { PersistentFolderState } from '../persistentState';
-import { gradleRun, readFileAsync } from '../utilities';
+import { gradleRun } from '../utilities';
+import { readFile } from 'fs/promises';
 import { onVendorDepsChanged } from '../vendorlibraries';
 import { HeaderExplorer } from './headertreeprovider';
 import { ISource, IToolChain } from './jsonformats';
@@ -296,7 +297,7 @@ export class ApiProvider implements CustomConfigurationProvider {
 
     let file = '';
     try {
-      file = await readFileAsync(
+      file = await readFile(
         path.join(this.workspace.uri.fsPath, 'build', this.configFile),
         'utf8'
       );

@@ -1,7 +1,8 @@
 'use scrict';
 
 import * as path from 'path';
-import { mkdirp, readFileAsync, writeFileAsync } from '../utilities';
+import { readFile, writeFile } from 'fs/promises';
+import {mkdirp} from 'mkdirp';
 import * as vscode from '../vscodeshim';
 import {
   ICreatorQuickPick,
@@ -141,10 +142,10 @@ export class ExampleTemplateAPI implements IExampleTemplateAPI {
     );
 
     const parsed = JSON.parse(
-      await readFileAsync(jsonFilePath, 'utf8')
+      await readFile(jsonFilePath, 'utf8')
     ) as IPreferencesJson;
     parsed.teamNumber = teamNumber;
-    await writeFileAsync(jsonFilePath, JSON.stringify(parsed, null, 4));
+    await writeFile(jsonFilePath, JSON.stringify(parsed, null, 4));
 
     return true;
   }

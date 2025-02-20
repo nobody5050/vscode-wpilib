@@ -3,7 +3,6 @@
 import * as electron from 'electron';
 import { dialog } from '@electron/remote';
 import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
 import * as ncp from 'ncp';
 import * as path from 'path';
 import * as temp from 'temp';
@@ -16,18 +15,6 @@ export function getIsWindows(): boolean {
 }
 
 export const existsAsync = util.promisify(fs.exists);
-
-export const copyFileAsync = util.promisify(fs.copyFile);
-
-export const deleteFileAsync = util.promisify(fs.unlink);
-
-export const readFileAsync = util.promisify(fs.readFile);
-
-export const writeFileAsync = util.promisify(fs.writeFile);
-
-export const readdirAsync = util.promisify(fs.readdir);
-
-export const mkdirp = mkdirp;
 
 export function ncpAsync(
   source: string,

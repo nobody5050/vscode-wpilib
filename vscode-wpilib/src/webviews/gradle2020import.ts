@@ -15,11 +15,10 @@ import { IPreferencesJson } from '../shared/preferencesjson';
 import {
   existsAsync,
   extensionContext,
-  mkdirp,
   promptForProjectOpen,
-  readFileAsync,
-  writeFileAsync,
 } from '../utilities';
+import { readFile, writeFile } from 'fs/promises';
+import { mkdirp } from 'mkdirp';
 import {
   IGradle2020IPCData,
   IGradle2020IPCReceive,
@@ -121,7 +120,7 @@ export class Gradle2020Import extends WebViewBase {
     let teamNumber: string | undefined;
 
     if (await existsAsync(wpilibJsonFile)) {
-      const wpilibJsonFileContents = await readFileAsync(
+      const wpilibJsonFileContents = await readFile(
         wpilibJsonFile,
         'utf8'
       );
@@ -218,7 +217,7 @@ export class Gradle2020Import extends WebViewBase {
     let cpp = true;
 
     if (await existsAsync(wpilibJsonFile)) {
-      const wpilibJsonFileContents = await readFileAsync(
+      const wpilibJsonFileContents = await readFile(
         wpilibJsonFile,
         'utf8'
       );
@@ -260,7 +259,7 @@ export class Gradle2020Import extends WebViewBase {
     let javaRobotPackage: string = '';
 
     if ((await existsAsync(gradleFile)) && !cpp) {
-      const gradleContents = await readFileAsync(gradleFile, 'utf8');
+      const gradleContents = await readFile(gradleFile, 'utf8');
       const mainClassRegex = 'def ROBOT_MAIN_CLASS = "(.+)"';
       const regexRes = new RegExp(mainClassRegex, 'g').exec(gradleContents);
       if (regexRes !== null && regexRes.length === 2) {
@@ -392,10 +391,10 @@ export class Gradle2020Import extends WebViewBase {
     );
 
     const parsed = JSON.parse(
-      await readFileAsync(jsonFilePath, 'utf8')
+      await readFile(jsonFilePath, 'utf8')
     ) as IPreferencesJson;
     parsed.teamNumber = parseInt(data.teamNumber, 10);
-    await writeFileAsync(jsonFilePath, JSON.stringify(parsed, null, 4));
+    await writeFile(jsonFilePath, JSON.stringify(parsed, null, 4));
 
     let replacementFile = path.join(resourceRoot, 'java_replacements.json');
     if (cpp) {

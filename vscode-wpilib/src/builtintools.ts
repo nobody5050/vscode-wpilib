@@ -8,7 +8,8 @@ import {
   IToolRunner,
   IUtilitiesAPI,
 } from 'vscode-wpilibapi';
-import { existsAsync, getIsWindows, readFileAsync } from './utilities';
+import { existsAsync, getIsWindows } from './utilities';
+import { readFile } from 'fs/promises';
 
 interface ITool {
   name: string;
@@ -109,7 +110,7 @@ export class BuiltinTools {
     const toolsJson = path.join(toolsDir, 'tools.json');
 
     try {
-      const jsonFileContents = await readFileAsync(toolsJson, 'utf8');
+      const jsonFileContents = await readFile(toolsJson, 'utf8');
       const jsonResult = JSON.parse(jsonFileContents) as ITool[];
       return {
         dir: toolsDir,

@@ -8,7 +8,8 @@ import {
   IJsonDependency,
   VendorLibrariesBase,
 } from './shared/vendorlibrariesbase';
-import { deleteFileAsync, existsAsync, readdirAsync } from './utilities';
+import {existsAsync } from './utilities';
+import { readdir, unlink } from 'fs/promises';
 
 const bWindow = getCurrentWindow();
 
@@ -42,12 +43,12 @@ class VendorLibraries extends VendorLibrariesBase {
   public async uninstallDependency(dir: string, uuid: string): Promise<void> {
     const url = this.getVendorFolder(dir);
 
-    const files = await readdirAsync(url);
+    const files = await readdir(url);
     for (const file of files) {
       const fullPath = path.join(url, file);
       const result = await this.readFile(fullPath);
       if (result !== undefined && uuid === result.uuid) {
-        await deleteFileAsync(fullPath);
+        await unlink(fullPath);
         break;
       }
     }

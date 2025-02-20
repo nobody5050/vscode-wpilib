@@ -56,36 +56,15 @@ export async function getPackageName(): Promise<string | undefined> {
   return packageName;
 }
 
-export const statAsync = fsPromises.stat;
-
-export const readFileAsync = fsPromises.readFile;
-
-export const writeFileAsync = fsPromises.writeFile;
-
-export const copyFileAsync = fsPromises.copyFile;
-
-export const mkdirAsync = fsPromises.mkdir;
 
 export const existsAsync = util.promisify(fs.exists);
-
-export const deleteFileAsync = fsPromises.unlink;
 
 export function ncpAsync(
   source: string,
   dest: string,
   options: ncp.Options = {}
 ): Promise<void> {
-  return mkdirp(dest).then(() => {
-    return new Promise<void>((resolve, reject) => {
-      ncp.ncp(source, dest, options, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  });
+  return mkdirp(dest).then(() => util.promisify(ncp)(source, dest, options));
 }
 
 export let javaHome: string | undefined;

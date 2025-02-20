@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
 import { glob } from 'glob';
 import * as path from 'path';
-import { readFileAsync } from '../utilities';
+import { readFile } from 'fs/promises';
 
 interface IReplaceGroup {
   from: string;
@@ -21,7 +21,7 @@ export async function ImportUpdate(
   srcDir: string,
   updateFile: string
 ): Promise<boolean> {
-  const toUpdate = await readFileAsync(updateFile, 'utf8');
+  const toUpdate = await readFile(updateFile, 'utf8');
   const toUpdateParsed: IToUpdate[] = jsonc.parse(toUpdate) as IToUpdate[];
 
   // Enumerate through each updater

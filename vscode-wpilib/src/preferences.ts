@@ -7,10 +7,8 @@ import { localize as i18n } from './locale';
 import { IPreferencesJson } from './shared/preferencesjson';
 import {
   existsAsync,
-  mkdirAsync,
-  readFileAsync,
-  writeFileAsync,
 } from './utilities';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 
 const defaultPreferences: IPreferencesJson = {
   currentLanguage: 'none',
@@ -359,7 +357,7 @@ export class Preferences implements IPreferences {
       return;
     }
 
-    const results = await readFileAsync(this.preferencesFile.fsPath, 'utf8');
+    const results = await readFile(this.preferencesFile.fsPath, 'utf8');
     this.preferencesJson = jsonc.parse(results) as IPreferencesJson;
   }
 
@@ -369,9 +367,9 @@ export class Preferences implements IPreferences {
         this.workspace.uri.fsPath
       );
       this.preferencesFile = vscode.Uri.file(configFilePath);
-      await mkdirAsync(path.dirname(this.preferencesFile.fsPath));
+      await mkdir(path.dirname(this.preferencesFile.fsPath));
     }
-    await writeFileAsync(
+    await writeFile(
       this.preferencesFile.fsPath,
       JSON.stringify(this.preferencesJson, null, 4)
     );

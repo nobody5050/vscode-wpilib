@@ -9,7 +9,8 @@ import {
   IExternalAPI,
   IPreferencesAPI,
 } from 'vscode-wpilibapi';
-import { getIsWindows, gradleRun, readFileAsync } from '../utilities';
+import { getIsWindows, gradleRun } from '../utilities';
+import { readFile } from 'fs/promises';
 import { IDebugCommands, startDebugging } from './debug';
 import { IUnixSimulateCommands, startUnixSimulation } from './simulateunix';
 import {
@@ -111,7 +112,7 @@ class DebugCodeDeployer implements ICodeDeployer {
       return false;
     }
 
-    const debugInfo = await readFileAsync(
+    const debugInfo = await readFile(
       path.join(workspace.uri.fsPath, 'build', 'debug', 'debug_info.json'),
       'utf8'
     );
@@ -145,7 +146,7 @@ class DebugCodeDeployer implements ICodeDeployer {
 
     const debugPath = targetDebugInfo.path;
 
-    const targetReadInfo = await readFileAsync(debugPath, 'utf8');
+    const targetReadInfo = await readFile(debugPath, 'utf8');
     const targetInfoArray: ICppDebugCommand[] = jsonc.parse(
       targetReadInfo
     ) as ICppDebugCommand[];
@@ -307,7 +308,7 @@ class SimulateCodeDeployer implements ICodeDeployer {
       return false;
     }
 
-    const simulateInfo = await readFileAsync(
+    const simulateInfo = await readFile(
       path.join(workspace.uri.fsPath, 'build', 'sim', 'debug_native.json'),
       'utf8'
     );

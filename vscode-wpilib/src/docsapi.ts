@@ -12,7 +12,9 @@ import {
   getMavenVersions,
   getNewestMavenVersion,
 } from './mavenapi';
-import { deleteFileAsync, existsAsync, mkdirp } from './utilities';
+import { existsAsync } from './utilities';
+import { unlink } from 'fs/promises';
+import { mkdirp } from 'mkdirp';
 
 export async function downloadDocs(
   repoRoot: string,
@@ -62,7 +64,7 @@ export async function downloadDocs(
       const outputFile = path.join(tmpFolder, 'download' + ext);
 
       if (await existsAsync(outputFile)) {
-        await deleteFileAsync(outputFile);
+        await unlink(outputFile);
       }
 
       disposable.dispose();

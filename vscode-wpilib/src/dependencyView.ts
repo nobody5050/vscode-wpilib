@@ -8,7 +8,7 @@ import { isNewerVersion } from './versions';
 import { logger } from './logger';
 import { localize as i18n } from './locale';
 // @ts-ignore
-import elements from '!!raw-loader!@vscode-elements/elements/dist/bundled.js';
+import elements from '@vscode-elements/elements/dist/bundled.js?raw';
 export interface IJsonList {
   path: string;
   name: string;
