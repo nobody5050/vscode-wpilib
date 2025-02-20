@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ICommandAPI, ICommandCreator, IPreferencesAPI } from 'vscode-wpilibapi';
+import {
+  ICommandAPI,
+  ICommandCreator,
+  IPreferencesAPI,
+} from 'vscode-wpilibapi';
 import { logger } from '../logger';
 import { getClassName, ncpAsync } from '../utilities';
 
@@ -17,8 +21,14 @@ export interface ICppJsonLayout {
   replacename: string;
 }
 
-async function performCopy(commandRoot: string, command: ICppJsonLayout, folderSrc: vscode.Uri,
-                           folderHeader: vscode.Uri, includeRoot: vscode.Uri, replaceName: string): Promise<boolean> {
+async function performCopy(
+  commandRoot: string,
+  command: ICppJsonLayout,
+  folderSrc: vscode.Uri,
+  folderHeader: vscode.Uri,
+  includeRoot: vscode.Uri,
+  replaceName: string
+): Promise<boolean> {
   const commandFolder = path.join(commandRoot, command.foldername);
   const copiedSrcFiles: string[] = [];
   const copiedHeaderFiles: string[] = [];
@@ -56,22 +66,27 @@ async function performCopy(commandRoot: string, command: ICppJsonLayout, folderS
 
   for (const f of copiedHeaderFiles) {
     const file = path.join(folderHeader.fsPath, f);
-    promiseArray.push(new Promise<void>((resolve, reject) => {
-      fs.readFile(file, 'utf8', (err, dataIn) => {
-        if (err) {
-          reject(err);
-        } else {
-          const dataOut = dataIn.replace(new RegExp(command.replacename, 'g'), replaceName);
-          fs.writeFile(file, dataOut, 'utf8', (err1) => {
-            if (err1) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        }
-      });
-    }));
+    promiseArray.push(
+      new Promise<void>((resolve, reject) => {
+        fs.readFile(file, 'utf8', (err, dataIn) => {
+          if (err) {
+            reject(err);
+          } else {
+            const dataOut = dataIn.replace(
+              new RegExp(command.replacename, 'g'),
+              replaceName
+            );
+            fs.writeFile(file, dataOut, 'utf8', (err1) => {
+              if (err1) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }
+        });
+      })
+    );
   }
 
   await Promise.all(promiseArray);
@@ -80,26 +95,37 @@ async function performCopy(commandRoot: string, command: ICppJsonLayout, folderS
 
   for (const f of copiedSrcFiles) {
     const file = path.join(folderSrc.fsPath, f);
-    promiseArray.push(new Promise<void>((resolve, reject) => {
-      fs.readFile(file, 'utf8', (err, dataIn) => {
-        if (err) {
-          reject(err);
-        } else {
-          const joinedName = path.join(path.relative(includeRoot.path, folderHeader.path), replaceName).replace(/\\/g, '/');
+    promiseArray.push(
+      new Promise<void>((resolve, reject) => {
+        fs.readFile(file, 'utf8', (err, dataIn) => {
+          if (err) {
+            reject(err);
+          } else {
+            const joinedName = path
+              .join(
+                path.relative(includeRoot.path, folderHeader.path),
+                replaceName
+              )
+              .replace(/\\/g, '/');
 
-          const dataOut = dataIn.replace(new RegExp(`#include "${command.replacename}.h"`, 'g'), `#include "${joinedName}.h"`)
-            .replace(new RegExp(command.replacename, 'g'), replaceName);
+            const dataOut = dataIn
+              .replace(
+                new RegExp(`#include "${command.replacename}.h"`, 'g'),
+                `#include "${joinedName}.h"`
+              )
+              .replace(new RegExp(command.replacename, 'g'), replaceName);
 
-          fs.writeFile(file, dataOut, 'utf8', (err1) => {
-            if (err1) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        }
-      });
-    }));
+            fs.writeFile(file, dataOut, 'utf8', (err1) => {
+              if (err1) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }
+        });
+      })
+    );
   }
 
   await Promise.all(promiseArray);
@@ -110,16 +136,21 @@ async function performCopy(commandRoot: string, command: ICppJsonLayout, folderS
     const bname = path.basename(file);
     const dirname = path.dirname(file);
     if (path.basename(file).indexOf(command.replacename) > -1) {
-      const newname = path.join(dirname, bname.replace(new RegExp(command.replacename, 'g'), replaceName));
-      movePromiseArray.push(new Promise<void>((resolve, reject) => {
-        fs.rename(file, newname, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      }));
+      const newname = path.join(
+        dirname,
+        bname.replace(new RegExp(command.replacename, 'g'), replaceName)
+      );
+      movePromiseArray.push(
+        new Promise<void>((resolve, reject) => {
+          fs.rename(file, newname, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        })
+      );
     }
   }
 
@@ -133,16 +164,21 @@ async function performCopy(commandRoot: string, command: ICppJsonLayout, folderS
     const bname = path.basename(file);
     const dirname = path.dirname(file);
     if (path.basename(file).indexOf(command.replacename) > -1) {
-      const newname = path.join(dirname, bname.replace(new RegExp(command.replacename, 'g'), replaceName));
-      movePromiseArray.push(new Promise<void>((resolve, reject) => {
-        fs.rename(file, newname, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      }));
+      const newname = path.join(
+        dirname,
+        bname.replace(new RegExp(command.replacename, 'g'), replaceName)
+      );
+      movePromiseArray.push(
+        new Promise<void>((resolve, reject) => {
+          fs.rename(file, newname, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        })
+      );
     }
   }
 
@@ -156,7 +192,11 @@ async function performCopy(commandRoot: string, command: ICppJsonLayout, folderS
 export class Commands {
   private readonly commandResourceName = 'commands.json';
 
-  constructor(resourceRoot: string, core: ICommandAPI, preferences: IPreferencesAPI) {
+  constructor(
+    resourceRoot: string,
+    core: ICommandAPI,
+    preferences: IPreferencesAPI
+  ) {
     const commandFolder = path.join(resourceRoot, 'src', 'commands');
     const resourceFile = path.join(commandFolder, this.commandResourceName);
     fs.readFile(resourceFile, 'utf8', (err, data) => {
@@ -176,19 +216,27 @@ export class Commands {
           getDisplayName(): string {
             return c.name;
           },
-          async getIsCurrentlyValid(workspace: vscode.WorkspaceFolder): Promise<boolean> {
+          async getIsCurrentlyValid(
+            workspace: vscode.WorkspaceFolder
+          ): Promise<boolean> {
             const prefs = preferences.getPreferences(workspace);
             const currentLanguage = prefs.getCurrentLanguage();
             return currentLanguage === 'none' || currentLanguage === 'cpp';
           },
-          async generate(folder: vscode.Uri, workspace: vscode.WorkspaceFolder): Promise<boolean> {
+          async generate(
+            folder: vscode.Uri,
+            workspace: vscode.WorkspaceFolder
+          ): Promise<boolean> {
             const className = await getClassName();
 
             if (className === undefined || className === '') {
               return false;
             }
 
-            const workspaceRooted = path.relative(path.join(workspace.uri.path, 'src', 'main'), folder.path);
+            const workspaceRooted = path.relative(
+              path.join(workspace.uri.path, 'src', 'main'),
+              folder.path
+            );
 
             // include root is /include
             // src root is /cpp
@@ -209,19 +257,49 @@ export class Commands {
               includeRoot = folder;
             } else if (rootSrc === 0) {
               const filePath = path.relative('cpp', workspaceRooted);
-              srcFolder = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'cpp', filePath));
-              headerFolder = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'include', filePath));
-              includeRoot = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'include'));
+              srcFolder = vscode.Uri.file(
+                path.join(workspace.uri.path, 'src', 'main', 'cpp', filePath)
+              );
+              headerFolder = vscode.Uri.file(
+                path.join(
+                  workspace.uri.path,
+                  'src',
+                  'main',
+                  'include',
+                  filePath
+                )
+              );
+              includeRoot = vscode.Uri.file(
+                path.join(workspace.uri.path, 'src', 'main', 'include')
+              );
               // Current folder is src
-
             } else {
               const filePath = path.relative('include', workspaceRooted);
-              srcFolder = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'cpp', filePath));
-              headerFolder = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'include', filePath));
-              includeRoot = vscode.Uri.file(path.join(workspace.uri.path, 'src', 'main', 'include'));
+              srcFolder = vscode.Uri.file(
+                path.join(workspace.uri.path, 'src', 'main', 'cpp', filePath)
+              );
+              headerFolder = vscode.Uri.file(
+                path.join(
+                  workspace.uri.path,
+                  'src',
+                  'main',
+                  'include',
+                  filePath
+                )
+              );
+              includeRoot = vscode.Uri.file(
+                path.join(workspace.uri.path, 'src', 'main', 'include')
+              );
               // current folder is include
             }
-            return performCopy(commandFolder, c, srcFolder, headerFolder, includeRoot, className);
+            return performCopy(
+              commandFolder,
+              c,
+              srcFolder,
+              headerFolder,
+              includeRoot,
+              className
+            );
           },
         };
         core.addCommandProvider(provider);

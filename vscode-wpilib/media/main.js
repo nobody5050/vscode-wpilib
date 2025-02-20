@@ -210,5 +210,3 @@
 
   addEventListeners();
 })();
-
-

@@ -79,7 +79,8 @@ export class ErrorMessage implements IMessage {
     tmp = this.getSizedString(data, count);
     this.callStack = tmp.data;
     count += tmp.byteLength;
-    this.messageType = (this.flags & 1) !== 0 ? MessageType.Error : MessageType.Warning;
+    this.messageType =
+      (this.flags & 1) !== 0 ? MessageType.Error : MessageType.Warning;
   }
 
   private getSizedString(data: Buffer, start: number): IStringNumberPair {

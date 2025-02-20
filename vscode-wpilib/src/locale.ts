@@ -34,10 +34,16 @@ function readJsonFileSync<T = unknown>(filename: string): T {
 }
 
 function initializeSettings() {
-  options = { locale: undefined, language: undefined, languagePackSupport: false };
+  options = {
+    locale: undefined,
+    language: undefined,
+    languagePackSupport: false,
+  };
   if (typeof process.env.VSCODE_NLS_CONFIG === 'string') {
     try {
-      const vscodeOptions = JSON.parse(process.env.VSCODE_NLS_CONFIG) as IVSCodeNlsConfig;
+      const vscodeOptions = JSON.parse(
+        process.env.VSCODE_NLS_CONFIG
+      ) as IVSCodeNlsConfig;
       let language: string | undefined;
       if (vscodeOptions.availableLanguages) {
         const value = vscodeOptions.availableLanguages['*'];
@@ -83,7 +89,9 @@ export function getLocaleFilePath(domain: string) {
 
 export function loadLocaleFile(domain: string) {
   if (typeof localeCache[domain] !== 'undefined') {
-    logger.log(`[Locale] ${domain}@${options.language} is already loaded, using cached one.`);
+    logger.log(
+      `[Locale] ${domain}@${options.language} is already loaded, using cached one.`
+    );
     return localeCache[domain];
   }
   logger.log(`[Locale] Loading ${domain}@${options.language}`);
@@ -106,7 +114,11 @@ export function loadLocaleFile(domain: string) {
 /**
  * When `message` takes an array, it will be treated as [translationKey, fallbackMessage]
  */
-export function localize(domain: string, message: string | string[], ...args: unknown[]) {
+export function localize(
+  domain: string,
+  message: string | string[],
+  ...args: unknown[]
+) {
   if (!(typeof localeCache[domain] !== 'undefined')) {
     loadLocaleFile(domain);
   }

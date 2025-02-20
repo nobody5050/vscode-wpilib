@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ICommandAPI, ICommandCreator, IPreferencesAPI } from 'vscode-wpilibapi';
+import {
+  ICommandAPI,
+  ICommandCreator,
+  IPreferencesAPI,
+} from 'vscode-wpilibapi';
 import { logger } from '../logger';
 import { getClassName, getPackageName, ncpAsync } from '../utilities';
 
@@ -15,8 +19,13 @@ export interface IJavaJsonLayout {
   replacename: string;
 }
 
-async function performCopy(commandRoot: string, command: IJavaJsonLayout, folder: vscode.Uri, replaceName: string,
-                           javaPackage: string): Promise<boolean> {
+async function performCopy(
+  commandRoot: string,
+  command: IJavaJsonLayout,
+  folder: vscode.Uri,
+  replaceName: string,
+  javaPackage: string
+): Promise<boolean> {
   const commandFolder = path.join(commandRoot, command.foldername);
   const copiedFiles: string[] = [];
   await ncpAsync(commandFolder, folder.fsPath, {
@@ -28,30 +37,34 @@ async function performCopy(commandRoot: string, command: IJavaJsonLayout, folder
     },
   });
 
-  const replacePackageFrom = 'edu\\.wpi\\.first\\.wpilibj\\.(?:commands)\\..+?(?=;|\\.)';
+  const replacePackageFrom =
+    'edu\\.wpi\\.first\\.wpilibj\\.(?:commands)\\..+?(?=;|\\.)';
   const replacePackageTo = javaPackage;
 
   const promiseArray: Promise<void>[] = [];
 
   for (const f of copiedFiles) {
     const file = path.join(folder.fsPath, f);
-    promiseArray.push(new Promise<void>((resolve, reject) => {
-      fs.readFile(file, 'utf8', (err, dataIn) => {
-        if (err) {
-          reject(err);
-        } else {
-          const dataOut = dataIn.replace(new RegExp(replacePackageFrom, 'g'), replacePackageTo)
-            .replace(new RegExp(command.replacename, 'g'), replaceName);
-          fs.writeFile(file, dataOut, 'utf8', (err1) => {
-            if (err1) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        }
-      });
-    }));
+    promiseArray.push(
+      new Promise<void>((resolve, reject) => {
+        fs.readFile(file, 'utf8', (err, dataIn) => {
+          if (err) {
+            reject(err);
+          } else {
+            const dataOut = dataIn
+              .replace(new RegExp(replacePackageFrom, 'g'), replacePackageTo)
+              .replace(new RegExp(command.replacename, 'g'), replaceName);
+            fs.writeFile(file, dataOut, 'utf8', (err1) => {
+              if (err1) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }
+        });
+      })
+    );
   }
 
   await Promise.all(promiseArray);
@@ -62,16 +75,21 @@ async function performCopy(commandRoot: string, command: IJavaJsonLayout, folder
     const bname = path.basename(file);
     const dirname = path.dirname(file);
     if (path.basename(file).indexOf(command.replacename) > -1) {
-      const newname = path.join(dirname, bname.replace(new RegExp(command.replacename, 'g'), replaceName));
-      movePromiseArray.push(new Promise<string>((resolve, reject) => {
-        fs.rename(file, newname, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(newname);
-          }
-        });
-      }));
+      const newname = path.join(
+        dirname,
+        bname.replace(new RegExp(command.replacename, 'g'), replaceName)
+      );
+      movePromiseArray.push(
+        new Promise<string>((resolve, reject) => {
+          fs.rename(file, newname, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(newname);
+            }
+          });
+        })
+      );
     }
   }
 
@@ -94,7 +112,11 @@ async function performCopy(commandRoot: string, command: IJavaJsonLayout, folder
 export class Commands {
   private readonly commandResourceName = 'commands.json';
 
-  constructor(resourceRoot: string, core: ICommandAPI, preferences: IPreferencesAPI) {
+  constructor(
+    resourceRoot: string,
+    core: ICommandAPI,
+    preferences: IPreferencesAPI
+  ) {
     const commandFolder = path.join(resourceRoot, 'src', 'commands');
     const resourceFile = path.join(commandFolder, this.commandResourceName);
     fs.readFile(resourceFile, 'utf8', (err, data) => {
@@ -102,7 +124,9 @@ export class Commands {
         logger.error('Command file error: ', err);
         return;
       }
-      const commands: IJavaJsonLayout[] = jsonc.parse(data) as IJavaJsonLayout[];
+      const commands: IJavaJsonLayout[] = jsonc.parse(
+        data
+      ) as IJavaJsonLayout[];
       for (const c of commands) {
         const provider: ICommandCreator = {
           getLanguage(): string {
@@ -114,7 +138,9 @@ export class Commands {
           getDisplayName(): string {
             return c.name;
           },
-          async getIsCurrentlyValid(workspace: vscode.WorkspaceFolder): Promise<boolean> {
+          async getIsCurrentlyValid(
+            workspace: vscode.WorkspaceFolder
+          ): Promise<boolean> {
             const prefs = preferences.getPreferences(workspace);
             const currentLanguage = prefs.getCurrentLanguage();
             return currentLanguage === 'none' || currentLanguage === 'java';
@@ -128,7 +154,9 @@ export class Commands {
             let javaPackage = '';
 
             if (rootIndex !== -1) {
-              const packageslash = folderpath.substring(rootIndex + searchString.length);
+              const packageslash = folderpath.substring(
+                rootIndex + searchString.length
+              );
               if (packageslash.length !== 0) {
                 javaPackage = packageslash.substring(1).replace(/\//g, '.');
               }
@@ -147,7 +175,13 @@ export class Commands {
             if (className === undefined || className === '') {
               return false;
             }
-            return performCopy(commandFolder, c, folder, className, javaPackage);
+            return performCopy(
+              commandFolder,
+              c,
+              folder,
+              className,
+              javaPackage
+            );
           },
         };
         core.addCommandProvider(provider);

@@ -5,7 +5,12 @@ import * as vscode from 'vscode';
 import { IPreferences } from 'vscode-wpilibapi';
 import { localize as i18n } from './locale';
 import { IPreferencesJson } from './shared/preferencesjson';
-import { existsAsync, mkdirAsync, readFileAsync, writeFileAsync } from './utilities';
+import {
+  existsAsync,
+  mkdirAsync,
+  readFileAsync,
+  writeFileAsync,
+} from './utilities';
 
 const defaultPreferences: IPreferencesJson = {
   currentLanguage: 'none',
@@ -37,14 +42,20 @@ export class Preferences implements IPreferences {
   public static readonly wpilibPreferencesFolder: string = '.wpilib';
 
   // Create for a specific workspace
-  public static async Create(workspace: vscode.WorkspaceFolder): Promise<Preferences> {
+  public static async Create(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<Preferences> {
     const prefs = new Preferences(workspace);
     await prefs.asyncInitialize();
     return prefs;
   }
 
   public static getPrefrencesFilePath(root: string): string {
-    return path.join(root, Preferences.wpilibPreferencesFolder, Preferences.preferenceFileName);
+    return path.join(
+      root,
+      Preferences.wpilibPreferencesFolder,
+      Preferences.preferenceFileName
+    );
   }
 
   // Workspace these preferences are assigned to.
@@ -53,7 +64,8 @@ export class Preferences implements IPreferences {
   private preferencesFile?: vscode.Uri;
   private preferencesJson: IPreferencesJson = defaultPreferences;
   private configFileWatcher: vscode.FileSystemWatcher;
-  private readonly preferencesGlob: string = '**/' + Preferences.preferenceFileName;
+  private readonly preferencesGlob: string =
+    '**/' + Preferences.preferenceFileName;
   private disposables: vscode.Disposable[] = [];
   private isWPILibProject: boolean = false;
 
@@ -66,14 +78,22 @@ export class Preferences implements IPreferences {
     this.disposables.push(this.configFileWatcher);
 
     this.configFileWatcher.onDidCreate(async (uri) => {
-      await vscode.commands.executeCommand('setContext', 'isWPILibProject', true);
+      await vscode.commands.executeCommand(
+        'setContext',
+        'isWPILibProject',
+        true
+      );
       this.isWPILibProject = true;
       this.preferencesFile = uri;
       await this.updatePreferences();
     });
 
     this.configFileWatcher.onDidDelete(async () => {
-      await vscode.commands.executeCommand('setContext', 'isWPILibProject', false);
+      await vscode.commands.executeCommand(
+        'setContext',
+        'isWPILibProject',
+        false
+      );
       this.isWPILibProject = false;
       this.preferencesFile = undefined;
       await this.updatePreferences();
@@ -90,7 +110,9 @@ export class Preferences implements IPreferences {
 
   public async getTeamNumber(): Promise<number> {
     // If always ask, get it.
-    const alwaysAsk = this.getConfiguration().get<boolean>('alwaysAskForTeamNumber');
+    const alwaysAsk = this.getConfiguration().get<boolean>(
+      'alwaysAskForTeamNumber'
+    );
     if (alwaysAsk !== undefined && alwaysAsk === true) {
       return requestTeamNumber();
     }
@@ -140,7 +162,10 @@ export class Preferences implements IPreferences {
     return res;
   }
 
-  public async setAutoStartRioLog(autoStart: boolean, global: boolean): Promise<void> {
+  public async setAutoStartRioLog(
+    autoStart: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
@@ -156,12 +181,19 @@ export class Preferences implements IPreferences {
     return this.getConfiguration().update('offline', value, target);
   }
 
-  public async setStopSimulationOnEntry(value: boolean, global: boolean): Promise<void> {
+  public async setStopSimulationOnEntry(
+    value: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
     }
-    return this.getConfiguration().update('stopSimulationOnEntry', value, target);
+    return this.getConfiguration().update(
+      'stopSimulationOnEntry',
+      value,
+      target
+    );
   }
 
   public async setSkipTests(value: boolean, global: boolean): Promise<void> {
@@ -172,20 +204,34 @@ export class Preferences implements IPreferences {
     return this.getConfiguration().update('skipTests', value, target);
   }
 
-  public async setSkipSelectSimulateExtension(value: boolean, global: boolean): Promise<void> {
+  public async setSkipSelectSimulateExtension(
+    value: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
     }
-    return this.getConfiguration().update('skipSelectSimulateExtension', value, target);
+    return this.getConfiguration().update(
+      'skipSelectSimulateExtension',
+      value,
+      target
+    );
   }
 
-  public async setSelectDefaultSimulateExtension(value: boolean, global: boolean): Promise<void> {
+  public async setSelectDefaultSimulateExtension(
+    value: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
     }
-    return this.getConfiguration().update('selectDefaultSimulateExtension', value, target);
+    return this.getConfiguration().update(
+      'selectDefaultSimulateExtension',
+      value,
+      target
+    );
   }
 
   public getAutoSaveOnDeploy(): boolean {
@@ -196,7 +242,10 @@ export class Preferences implements IPreferences {
     return res;
   }
 
-  public async setAutoSaveOnDeploy(autoSave: boolean, global: boolean): Promise<void> {
+  public async setAutoSaveOnDeploy(
+    autoSave: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
@@ -205,7 +254,9 @@ export class Preferences implements IPreferences {
   }
 
   public getAdditionalGradleArguments(): string {
-    const res = this.getConfiguration().get<string>('additionalGradleArguments');
+    const res = this.getConfiguration().get<string>(
+      'additionalGradleArguments'
+    );
     if (res === undefined) {
       return '';
     }
@@ -229,7 +280,9 @@ export class Preferences implements IPreferences {
   }
 
   public getSkipSelectSimulateExtension(): boolean {
-    const res = this.getConfiguration().get<boolean>('skipSelectSimulateExtension');
+    const res = this.getConfiguration().get<boolean>(
+      'skipSelectSimulateExtension'
+    );
     if (res === undefined) {
       return false;
     }
@@ -237,7 +290,9 @@ export class Preferences implements IPreferences {
   }
 
   public getSelectDefaultSimulateExtension(): boolean {
-    const res = this.getConfiguration().get<boolean>('selectDefaultSimulateExtension');
+    const res = this.getConfiguration().get<boolean>(
+      'selectDefaultSimulateExtension'
+    );
     if (res === undefined) {
       return false;
     }
@@ -252,7 +307,10 @@ export class Preferences implements IPreferences {
     return res;
   }
 
-  public async setDeployOffline(value: boolean, global: boolean): Promise<void> {
+  public async setDeployOffline(
+    value: boolean,
+    global: boolean
+  ): Promise<void> {
     let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
     if (!global) {
       target = vscode.ConfigurationTarget.WorkspaceFolder;
@@ -275,7 +333,9 @@ export class Preferences implements IPreferences {
   }
 
   private async asyncInitialize() {
-    const configFilePath = Preferences.getPrefrencesFilePath(this.workspace.uri.fsPath);
+    const configFilePath = Preferences.getPrefrencesFilePath(
+      this.workspace.uri.fsPath
+    );
 
     if (await existsAsync(configFilePath)) {
       vscode.commands.executeCommand('setContext', 'isWPILibProject', true);
@@ -305,18 +365,28 @@ export class Preferences implements IPreferences {
 
   private async writePreferences(): Promise<void> {
     if (this.preferencesFile === undefined) {
-      const configFilePath = Preferences.getPrefrencesFilePath(this.workspace.uri.fsPath);
+      const configFilePath = Preferences.getPrefrencesFilePath(
+        this.workspace.uri.fsPath
+      );
       this.preferencesFile = vscode.Uri.file(configFilePath);
       await mkdirAsync(path.dirname(this.preferencesFile.fsPath));
     }
-    await writeFileAsync(this.preferencesFile.fsPath, JSON.stringify(this.preferencesJson, null, 4));
+    await writeFileAsync(
+      this.preferencesFile.fsPath,
+      JSON.stringify(this.preferencesJson, null, 4)
+    );
   }
 
   private async noTeamNumberLogic(): Promise<number> {
     // Ask if user wants to set team number.
-    const teamRequest = await vscode.window.showInformationMessage(i18n('message', 'No team number, would you like to save one?'), {
-      modal: true,
-    }, i18n('ui', 'Yes'), i18n('ui', 'No'));
+    const teamRequest = await vscode.window.showInformationMessage(
+      i18n('message', 'No team number, would you like to save one?'),
+      {
+        modal: true,
+      },
+      i18n('ui', 'Yes'),
+      i18n('ui', 'No')
+    );
     if (teamRequest === undefined) {
       return -1;
     }

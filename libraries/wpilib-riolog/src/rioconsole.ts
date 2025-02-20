@@ -102,7 +102,8 @@ export class RioConsole extends EventEmitter implements IRioConsole {
             return;
           }
         }
-        this.dataStore.frameSize = (this.dataStore.buf[0] << 8) | this.dataStore.buf[1];
+        this.dataStore.frameSize =
+          (this.dataStore.buf[0] << 8) | this.dataStore.buf[1];
       }
       {
         let need = this.dataStore.frameSize - (this.dataStore.count - 2);

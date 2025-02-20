@@ -4,7 +4,10 @@ import { app, dialog, getCurrentWindow } from '@electron/remote';
 import * as path from 'path';
 import { logger } from './logger';
 import { UtilitiesAPI } from './shared/utilitiesapi';
-import { IJsonDependency, VendorLibrariesBase } from './shared/vendorlibrariesbase';
+import {
+  IJsonDependency,
+  VendorLibrariesBase,
+} from './shared/vendorlibrariesbase';
 import { deleteFileAsync, existsAsync, readdirAsync } from './utilities';
 
 const bWindow = getCurrentWindow();
@@ -94,12 +97,16 @@ class VendorLibraries extends VendorLibrariesBase {
 
     for (const dep of existing) {
       if (dep.uuid === fileDep.uuid) {
-        alert ('Library already installed');
+        alert('Library already installed');
         return;
       }
     }
 
-    const success = await this.installDependency(fileDep, this.getVendorFolder(dir), true);
+    const success = await this.installDependency(
+      fileDep,
+      this.getVendorFolder(dir),
+      true
+    );
     if (success) {
       alert('Successfully installed ' + fileDep.name);
     } else {
@@ -113,7 +120,7 @@ class VendorLibraries extends VendorLibrariesBase {
       file = await this.loadFileFromUrl(url);
     } catch (err) {
       logger.log('Error fetching file', err);
-      alert ('Failure ' + err);
+      alert('Failure ' + err);
       return;
     }
     if (file !== undefined) {
@@ -122,12 +129,16 @@ class VendorLibraries extends VendorLibrariesBase {
 
       for (const dep of existing) {
         if (dep.uuid === file.uuid) {
-          alert ('Library already installed');
+          alert('Library already installed');
           return;
         }
       }
 
-      const success = await this.installDependency(file, this.getVendorFolder(dir), true);
+      const success = await this.installDependency(
+        file,
+        this.getVendorFolder(dir),
+        true
+      );
       if (success) {
         alert('Successfully installed ' + file.name);
       } else {
@@ -143,18 +154,16 @@ export async function selectProjectButton(): Promise<void> {
   const paths = await dialog.showOpenDialog(bWindow, {
     buttonLabel: 'Select Project (build.gradle)',
     defaultPath: app.getPath('documents'),
-    filters: [
-      { name: 'Build Files', extensions: ['gradle'] },
-    ],
+    filters: [{ name: 'Build Files', extensions: ['gradle'] }],
     message: 'Select your project by selecting build.grade',
-    properties: [
-      'openFile',
-    ],
+    properties: ['openFile'],
     title: 'Select your project',
   });
   if (paths.filePaths && paths.filePaths.length === 1) {
     if (await existsAsync(paths.filePaths[0])) {
-      const input = document.getElementById('projectFolder') as HTMLInputElement;
+      const input = document.getElementById(
+        'projectFolder'
+      ) as HTMLInputElement;
       input.value = path.dirname(paths.filePaths[0]);
       const div = document.getElementById('validprojectdiv') as HTMLDivElement;
       div.style.display = null!;

@@ -18,8 +18,15 @@ export interface IExampleTemplateAPI {
   addExampleProvider(provider: IExampleTemplateCreator): void;
   getLanguages(template: boolean): string[];
   getBases(template: boolean, language: string): ICreatorQuickPick[];
-  createProject(template: boolean, language: string, base: string, toFolder: string,
-                newFolder: boolean, projectName: string, teamNumber: number): Promise<boolean>;
+  createProject(
+    template: boolean,
+    language: string,
+    base: string,
+    toFolder: string,
+    newFolder: boolean,
+    projectName: string,
+    teamNumber: number
+  ): Promise<boolean>;
 }
 
 export interface IUtilitiesAPI {

@@ -25,7 +25,9 @@ export interface IProjectInfo {
   vendorLibraries: IVendorLibraryPair[];
 }
 
-async function extensionVersion(extension: vscode.Extension<unknown> | undefined): Promise<string> {
+async function extensionVersion(
+  extension: vscode.Extension<unknown> | undefined
+): Promise<string> {
   if (extension === undefined) {
     return 'Not Installed';
   }
@@ -39,12 +41,19 @@ export class ProjectInfoGatherer {
   private disposables: vscode.Disposable[] = [];
   private statusBar: vscode.StatusBarItem;
 
-  public constructor(vendorLibraries: VendorLibraries, wpilibUpdates: WPILibUpdates, externalApi: IExternalAPI) {
+  public constructor(
+    vendorLibraries: VendorLibraries,
+    wpilibUpdates: WPILibUpdates,
+    externalApi: IExternalAPI
+  ) {
     this.vendorLibraries = vendorLibraries;
     this.wpilibUpdates = wpilibUpdates;
     this.externalApi = externalApi;
 
-    this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
+    this.statusBar = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      0
+    );
     this.statusBar.text = 'WPILib';
     this.statusBar.tooltip = 'Open WPILib Project Information';
     this.statusBar.command = 'wpilibcore.getProjectInformation';
@@ -61,9 +70,14 @@ export class ProjectInfoGatherer {
       }
     }
 
-    this.disposables.push(vscode.commands.registerCommand('wpilibcore.getProjectInformation', async () => {
-      await this.displayProjectInfo();
-    }));
+    this.disposables.push(
+      vscode.commands.registerCommand(
+        'wpilibcore.getProjectInformation',
+        async () => {
+          await this.displayProjectInfo();
+        }
+      )
+    );
   }
 
   public dispose() {
@@ -73,14 +87,17 @@ export class ProjectInfoGatherer {
   }
 
   public async displayProjectInfo(): Promise<void> {
-    const wp = await this.externalApi.getPreferencesAPI().getFirstOrSelectedWorkspace();
+    const wp = await this.externalApi
+      .getPreferencesAPI()
+      .getFirstOrSelectedWorkspace();
     if (wp === undefined) {
       logger.warn('no workspace');
       return;
     }
     const projectInfo = await this.getProjectInfo(wp);
     const jdkLoc = await findJdkPath(this.externalApi);
-    const jdkVer = (jdkLoc === undefined) ? 'unknown' : await getJavaVersion(jdkLoc);
+    const jdkVer =
+      jdkLoc === undefined ? 'unknown' : await getJavaVersion(jdkLoc);
     let infoString = `WPILib Information:
 Project Version: ${projectInfo.wpilibProjectVersion}
 VS Code Version: ${vscode.version}
@@ -99,38 +116,61 @@ Vendor Libraries:
 `;
     }
 
-    vscode.window.showInformationMessage(infoString, {
-      modal: true,
-    }, 'Copy').then(action => {
-      if (action === 'Copy') {
-        vscode.env.clipboard.writeText(infoString);
-      }
-    });
+    vscode.window
+      .showInformationMessage(
+        infoString,
+        {
+          modal: true,
+        },
+        'Copy'
+      )
+      .then((action) => {
+        if (action === 'Copy') {
+          vscode.env.clipboard.writeText(infoString);
+        }
+      });
   }
 
   public async getViewInfo(): Promise<IProjectInfo | undefined> {
-    const wp = await this.externalApi.getPreferencesAPI().getFirstOrSelectedWorkspace();
+    const wp = await this.externalApi
+      .getPreferencesAPI()
+      .getFirstOrSelectedWorkspace();
     if (wp === undefined) {
       return wp;
     }
     return this.getProjectInfo(wp);
   }
 
-  private async getProjectInfo(workspace: vscode.WorkspaceFolder): Promise<IProjectInfo> {
-    const vendorLibs = await this.vendorLibraries.getCurrentlyInstalledLibraries(workspace);
+  private async getProjectInfo(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<IProjectInfo> {
+    const vendorLibs =
+      await this.vendorLibraries.getCurrentlyInstalledLibraries(workspace);
 
-    let currentGradleVersion = await this.wpilibUpdates.getGradleRIOVersion(workspace);
+    let currentGradleVersion =
+      await this.wpilibUpdates.getGradleRIOVersion(workspace);
 
     if (currentGradleVersion === undefined) {
       currentGradleVersion = 'unknown';
     }
 
-    const debugExt =  await extensionVersion(vscode.extensions.getExtension('vscjava.vscode-java-debug'));
-    const depViewer = await extensionVersion(vscode.extensions.getExtension('vscjava.vscode-java-dependency'));
-    const javaExt = await extensionVersion(vscode.extensions.getExtension('redhat.java'));
-    const cpp = await extensionVersion(vscode.extensions.getExtension('ms-vscode.cpptools'));
+    const debugExt = await extensionVersion(
+      vscode.extensions.getExtension('vscjava.vscode-java-debug')
+    );
+    const depViewer = await extensionVersion(
+      vscode.extensions.getExtension('vscjava.vscode-java-dependency')
+    );
+    const javaExt = await extensionVersion(
+      vscode.extensions.getExtension('redhat.java')
+    );
+    const cpp = await extensionVersion(
+      vscode.extensions.getExtension('ms-vscode.cpptools')
+    );
 
-    const extensionPackageJson = path.join(extensionContext.extensionPath, 'package.json');
+    const extensionPackageJson = path.join(
+      extensionContext.extensionPath,
+      'package.json'
+    );
     const packageJson = await readFileAsync(extensionPackageJson, 'utf8');
     const currentVsCodeVersion: string = json.parse(packageJson).version;
 

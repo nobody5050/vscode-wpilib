@@ -1,7 +1,15 @@
 'use strict';
 
-import { IProjectIPCReceive, IProjectIPCSend, ProjectType } from './projectcreatorpagetypes';
-import { validateProject, validateTeamNumber, validateProjectFolder } from './sharedpages';
+import {
+  IProjectIPCReceive,
+  IProjectIPCSend,
+  ProjectType,
+} from './projectcreatorpagetypes';
+import {
+  validateProject,
+  validateTeamNumber,
+  validateProjectFolder,
+} from './sharedpages';
 
 interface IVsCodeApi {
   postMessage(message: IProjectIPCReceive): void;
@@ -66,8 +74,9 @@ function selectProjectFolder() {
       projectName: '',
       projectType,
       teamNumber: '',
-      toFolder: (document.getElementById('projectFolder') as HTMLInputElement).value,
-    }
+      toFolder: (document.getElementById('projectFolder') as HTMLInputElement)
+        .value,
+    },
   });
 }
 
@@ -83,13 +92,18 @@ function generateProject() {
   vscode.postMessage({
     data: {
       base,
-      desktop: (document.getElementById('desktopCB') as HTMLInputElement).checked,
+      desktop: (document.getElementById('desktopCB') as HTMLInputElement)
+        .checked,
       language,
-      newFolder: (document.getElementById('newFolderCB') as HTMLInputElement).checked,
-      projectName: (document.getElementById('projectName') as HTMLInputElement).value,
+      newFolder: (document.getElementById('newFolderCB') as HTMLInputElement)
+        .checked,
+      projectName: (document.getElementById('projectName') as HTMLInputElement)
+        .value,
       projectType,
-      teamNumber: (document.getElementById('teamNumber') as HTMLInputElement).value,
-      toFolder: (document.getElementById('projectFolder') as HTMLInputElement).value,
+      teamNumber: (document.getElementById('teamNumber') as HTMLInputElement)
+        .value,
+      toFolder: (document.getElementById('projectFolder') as HTMLInputElement)
+        .value,
     },
     type: 'createproject',
   });
@@ -115,7 +129,10 @@ window.addEventListener('message', (event) => {
       base = '';
       baseButton.style.visibility = 'initial';
       baseButton.disabled = true;
-      baseButton.innerText = window.i18nTrans('projectcreator', 'Select a project base');
+      baseButton.innerText = window.i18nTrans(
+        'projectcreator',
+        'Select a project base'
+      );
       selectLanguage();
       break;
     case 'language':
@@ -123,7 +140,10 @@ window.addEventListener('message', (event) => {
       lang.innerText = language;
       base = '';
       baseButton.disabled = false;
-      baseButton.innerText = window.i18nTrans('projectcreator', 'Select a project base');
+      baseButton.innerText = window.i18nTrans(
+        'projectcreator',
+        'Select a project base'
+      );
       selectProjectBase();
       break;
     case 'base':

@@ -44,7 +44,7 @@ jobs:
       - name: Notarize Standalone Utility
         uses: wpilibsuite/xcode-notarize@v3
         with:
-          product-path: "wpilib-utility-standalone/build/wpilibutility-darwin-universal/wpilibutility.app"
+          product-path: 'wpilib-utility-standalone/build/wpilibutility-darwin-universal/wpilibutility.app'
           appstore-connect-username: ${{ secrets.APPLE_NOTARIZATION_USERNAME }}
           appstore-connect-teamid: ${{ secrets.APPLE_NOTARIZATION_TEAMID }}
           appstore-connect-password: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
@@ -162,7 +162,7 @@ jobs:
           path: ${{ github.workspace }}/build/distributions/*
 
   release:
-    name: "Release"
+    name: 'Release'
     runs-on: ubuntu-latest
     needs: [build-mac, build-linux, build-windows, build-windows-vsix]
     if: startsWith(github.ref, 'refs/tags/v')
@@ -177,6 +177,6 @@ jobs:
         with:
           body_path: ${{ github.workspace }}/.github/ReleaseBody.txt
           prerelease: true
-          files: "artifacts/**/*"
+          files: 'artifacts/**/*'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -251,7 +251,11 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
 
           if (success) {
             if (avail.instructions) {
-              await vscode.commands.executeCommand('extension.showWebsite', avail.instructions, dep.name);
+              await vscode.commands.executeCommand(
+                'extension.showWebsite',
+                avail.instructions,
+                dep.name
+              );
             }
             this.changed = Date.now();
 
@@ -264,7 +268,11 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
                 );
                 const newDep = await this.listToDependency(reqDep);
                 if (reqDep && newDep) {
-                  await this.vendorLibraries.installDependency(newDep, this.vendorLibraries.getWpVendorFolder(this.wp), true);
+                  await this.vendorLibraries.installDependency(
+                    newDep,
+                    this.vendorLibraries.getWpVendorFolder(this.wp),
+                    true
+                  );
                   // Do not show install instructions for required deps only selected.
                 }
               }
@@ -456,28 +464,35 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
 
   public async getAvailableDependencies(): Promise<IJsonList[]> {
     this.homeDeps = [];
-    if(this.wp === undefined) {
+    if (this.wp === undefined) {
       this.onlineDeps = [];
     } else {
-      const projectYear = this.externalApi.getPreferencesAPI().getPreferences(this.wp).getProjectYear();
+      const projectYear = this.externalApi
+        .getPreferencesAPI()
+        .getPreferences(this.wp)
+        .getProjectYear();
       const manifestURL = this.vendordepMarketplaceURL + `${projectYear}.json`;
       try {
         this.onlineDeps = await this.loadFileFromUrl(manifestURL);
       } catch (err) {
-        logger.log('Error fetching vendordep marketplace manifest', manifestURL, err);
+        logger.log(
+          'Error fetching vendordep marketplace manifest',
+          manifestURL,
+          err
+        );
         this.onlineDeps = [];
       }
     }
     this.homeDeps = await this.vendorLibraries.getHomeDirDeps();
     this.homeDeps.forEach((homedep) => {
       const depList: IJsonList = {
-          path: i18n('ui', homedep.jsonUrl),
-          name: i18n('ui', homedep.name),
-          version: i18n('ui', homedep.version),
-          uuid: i18n('ui', homedep.uuid),
-          description: i18n('ui', 'Loaded from Local Copy'),
-          website: i18n('ui', 'Loaded from Local Copy'),
-          instructions: i18n('ui', 'Loaded from Local Copy')
+        path: i18n('ui', homedep.jsonUrl),
+        name: i18n('ui', homedep.name),
+        version: i18n('ui', homedep.version),
+        uuid: i18n('ui', homedep.uuid),
+        description: i18n('ui', 'Loaded from Local Copy'),
+        website: i18n('ui', 'Loaded from Local Copy'),
+        instructions: i18n('ui', 'Loaded from Local Copy'),
       };
       const found = this.onlineDeps.find(
         (onlinedep) =>
@@ -568,4 +583,3 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
         `;
   }
 }
-

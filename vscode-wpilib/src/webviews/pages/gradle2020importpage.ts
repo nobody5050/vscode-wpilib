@@ -1,7 +1,15 @@
 'use strict';
 
-import { IGradle2020IPCReceive, IGradle2020IPCSend } from './gradle2020importpagetypes';
-import { validateProject, validateTeamNumber, validateProjectFolder, validateXrpRomi } from './sharedpages';
+import {
+  IGradle2020IPCReceive,
+  IGradle2020IPCSend,
+} from './gradle2020importpagetypes';
+import {
+  validateProject,
+  validateTeamNumber,
+  validateProjectFolder,
+  validateXrpRomi,
+} from './sharedpages';
 
 interface IVsCodeApi {
   postMessage(message: IGradle2020IPCReceive): void;
@@ -33,14 +41,21 @@ function importProjectButtonClick() {
   (document.activeElement as HTMLElement).blur();
   vscode.postMessage({
     data: {
-      desktop: (document.getElementById('desktopCB') as HTMLInputElement).checked,
+      desktop: (document.getElementById('desktopCB') as HTMLInputElement)
+        .checked,
       romi: (document.getElementById('romiCB') as HTMLInputElement).checked,
       xrp: (document.getElementById('xrpCB') as HTMLInputElement).checked,
-      fromProps: (document.getElementById('gradle2020Input') as HTMLInputElement).value,
-      newFolder: (document.getElementById('newFolderCB') as HTMLInputElement).checked,
-      projectName: (document.getElementById('projectName') as HTMLInputElement).value,
-      teamNumber: (document.getElementById('teamNumber') as HTMLInputElement).value,
-      toFolder: (document.getElementById('projectFolder') as HTMLInputElement).value,
+      fromProps: (
+        document.getElementById('gradle2020Input') as HTMLInputElement
+      ).value,
+      newFolder: (document.getElementById('newFolderCB') as HTMLInputElement)
+        .checked,
+      projectName: (document.getElementById('projectName') as HTMLInputElement)
+        .value,
+      teamNumber: (document.getElementById('teamNumber') as HTMLInputElement)
+        .value,
+      toFolder: (document.getElementById('projectFolder') as HTMLInputElement)
+        .value,
     },
     type: 'importproject',
   });
@@ -50,7 +65,8 @@ window.addEventListener('message', (event) => {
   const data = event.data as IGradle2020IPCSend;
   switch (data.type) {
     case 'gradle2020':
-      (document.getElementById('gradle2020Input') as HTMLInputElement).value = data.data;
+      (document.getElementById('gradle2020Input') as HTMLInputElement).value =
+        data.data;
       break;
     case 'projectname':
       const doc = document.getElementById('projectName') as HTMLInputElement;
@@ -74,8 +90,10 @@ window.addEventListener('message', (event) => {
 });
 
 window.addEventListener('load', (_: Event) => {
-  document.getElementById('gradle2020SelectButton')!.onclick = gradle2020SelectButtonClick;
-  document.getElementById('projectSelectButton')!.onclick = projectSelectButtonClick;
+  document.getElementById('gradle2020SelectButton')!.onclick =
+    gradle2020SelectButtonClick;
+  document.getElementById('projectSelectButton')!.onclick =
+    projectSelectButtonClick;
   document.getElementById('projectName')!.oninput = validateProject;
   document.getElementById('teamNumber')!.oninput = validateTeamNumber;
   document.getElementById('importProject')!.onclick = importProjectButtonClick;

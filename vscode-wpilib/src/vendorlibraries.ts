@@ -5,15 +5,21 @@ import * as vscode from 'vscode';
 import { logger } from './logger';
 import { IExternalAPI } from 'vscode-wpilibapi';
 import { localize as i18n } from './locale';
-import { IJsonDependency, VendorLibrariesBase } from './shared/vendorlibrariesbase';
-import { deleteFileAsync, readdirAsync } from './utilities';
+import {
+  IJsonDependency,
+  VendorLibrariesBase,
+} from './shared/vendorlibrariesbase';
+import { unlink, readdir } from 'fs/promises';
 import { isNewerVersion } from './versions';
 
 class OptionQuickPick implements vscode.QuickPickItem {
   public label: string;
   public func: (workspace: vscode.WorkspaceFolder) => Promise<void>;
 
-  constructor(name: string, func: (workspace: vscode.WorkspaceFolder) => Promise<void>) {
+  constructor(
+    name: string,
+    func: (workspace: vscode.WorkspaceFolder) => Promise<void>
+  ) {
     this.label = name;
     this.func = func;
   }
@@ -43,9 +49,15 @@ export class VendorLibraries extends VendorLibrariesBase {
     super(externalApi.getUtilitiesAPI());
     this.externalApi = externalApi;
 
-    this.disposables.push(vscode.commands.registerCommand('wpilibcore.manageVendorLibs', (uri: vscode.Uri | undefined) => {
-      return this.manageVendorLibraries(uri);
-    }, this));
+    this.disposables.push(
+      vscode.commands.registerCommand(
+        'wpilibcore.manageVendorLibs',
+        (uri: vscode.Uri | undefined) => {
+          return this.manageVendorLibraries(uri);
+        },
+        this
+      )
+    );
   }
 
   public dispose() {
@@ -54,7 +66,9 @@ export class VendorLibraries extends VendorLibrariesBase {
     }
   }
 
-  public async manageVendorLibraries(uri: vscode.Uri | undefined): Promise<void> {
+  public async manageVendorLibraries(
+    uri: vscode.Uri | undefined
+  ): Promise<void> {
     let workspace: vscode.WorkspaceFolder | undefined;
     if (uri !== undefined) {
       workspace = vscode.workspace.getWorkspaceFolder(uri);
@@ -70,21 +84,46 @@ export class VendorLibraries extends VendorLibrariesBase {
 
     const qpArr: OptionQuickPick[] = [];
 
-    qpArr.push(new OptionQuickPick(i18n('message', 'Manage current libraries'), async (wp) => {
-      await this.manageCurrentLibraries(wp);
-    }));
-    qpArr.push(new OptionQuickPick(i18n('message', 'Check for updates (offline)'), async (wp) => {
-      await this.offlineUpdates(wp);
-    }));
-    qpArr.push(new OptionQuickPick(i18n('message', 'Check for updates (online)'), async (wp) => {
-      await this.onlineUpdates(wp);
-    }));
-    qpArr.push(new OptionQuickPick(i18n('message', 'Install new libraries (offline)'), async (wp) => {
-      await this.offlineNew(wp);
-    }));
-    qpArr.push(new OptionQuickPick(i18n('message', 'Install new libraries (online)'), async (wp) => {
-      await this.onlineNew(wp);
-    }));
+    qpArr.push(
+      new OptionQuickPick(
+        i18n('message', 'Manage current libraries'),
+        async (wp) => {
+          await this.manageCurrentLibraries(wp);
+        }
+      )
+    );
+    qpArr.push(
+      new OptionQuickPick(
+        i18n('message', 'Check for updates (offline)'),
+        async (wp) => {
+          await this.offlineUpdates(wp);
+        }
+      )
+    );
+    qpArr.push(
+      new OptionQuickPick(
+        i18n('message', 'Check for updates (online)'),
+        async (wp) => {
+          await this.onlineUpdates(wp);
+        }
+      )
+    );
+    qpArr.push(
+      new OptionQuickPick(
+        i18n('message', 'Install new libraries (offline)'),
+        async (wp) => {
+          await this.offlineNew(wp);
+        }
+      )
+    );
+    qpArr.push(
+      new OptionQuickPick(
+        i18n('message', 'Install new libraries (online)'),
+        async (wp) => {
+          await this.onlineNew(wp);
+        }
+      )
+    );
 
     const result = await vscode.window.showQuickPick(qpArr, {
       placeHolder: i18n('ui', 'Select an option'),
@@ -95,7 +134,9 @@ export class VendorLibraries extends VendorLibrariesBase {
     }
   }
 
-  public async getCurrentlyInstalledLibraries(workspace: vscode.WorkspaceFolder): Promise<IJsonDependency[]> {
+  public async getCurrentlyInstalledLibraries(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<IJsonDependency[]> {
     return this.getInstalledDependencies(workspace);
   }
 
@@ -103,7 +144,9 @@ export class VendorLibraries extends VendorLibrariesBase {
     return this.loadFileFromUrl(url);
   }
 
-  private async manageCurrentLibraries(workspace: vscode.WorkspaceFolder): Promise<void> {
+  private async manageCurrentLibraries(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<void> {
     const installedDeps = await this.getInstalledDependencies(workspace);
     const deps: IJsonDependency[] = [];
 
@@ -124,22 +167,27 @@ export class VendorLibraries extends VendorLibrariesBase {
 
       void this.uninstallVendorLibraries(deps, workspace);
     } else {
-      vscode.window.showInformationMessage(i18n('message', 'No dependencies installed'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No dependencies installed')
+      );
     }
   }
 
-  public async uninstallVendorLibraries(toRemove: IJsonDependency[] | undefined, workspace: vscode.WorkspaceFolder): Promise<boolean> {
+  public async uninstallVendorLibraries(
+    toRemove: IJsonDependency[] | undefined,
+    workspace: vscode.WorkspaceFolder
+  ): Promise<boolean> {
     let anySucceeded = false;
     if (toRemove !== undefined) {
       const url = this.getWpVendorFolder(workspace);
-      const files = await readdirAsync(url);
+      const files = await readdir(url);
       for (const file of files) {
         const fullPath = path.join(url, file);
         const result = await this.readFile(fullPath);
         if (result !== undefined) {
           for (const ti of toRemove) {
             if (ti.uuid === result.uuid) {
-              await deleteFileAsync(fullPath);
+              await unlink(fullPath);
               anySucceeded = true;
             }
           }
@@ -149,7 +197,9 @@ export class VendorLibraries extends VendorLibrariesBase {
     return anySucceeded;
   }
 
-  private async offlineUpdates(workspace: vscode.WorkspaceFolder): Promise<void> {
+  private async offlineUpdates(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<void> {
     const installedDeps = await this.getInstalledDependencies(workspace);
 
     if (installedDeps.length !== 0) {
@@ -175,9 +225,15 @@ export class VendorLibraries extends VendorLibrariesBase {
         if (toUpdate !== undefined) {
           let anySucceeded = false;
           for (const ti of toUpdate) {
-            const success = await this.installDependency(ti.dep, this.getWpVendorFolder(workspace), true);
+            const success = await this.installDependency(
+              ti.dep,
+              this.getWpVendorFolder(workspace),
+              true
+            );
             if (!success) {
-              vscode.window.showErrorMessage(i18n('message', 'Failed to install {0}', ti.dep.name));
+              vscode.window.showErrorMessage(
+                i18n('message', 'Failed to install {0}', ti.dep.name)
+              );
             } else {
               anySucceeded = true;
             }
@@ -187,14 +243,20 @@ export class VendorLibraries extends VendorLibrariesBase {
           }
         }
       } else {
-        vscode.window.showInformationMessage(i18n('message', 'No updates available'));
+        vscode.window.showInformationMessage(
+          i18n('message', 'No updates available')
+        );
       }
     } else {
-      vscode.window.showInformationMessage(i18n('message', 'No dependencies installed'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No dependencies installed')
+      );
     }
   }
 
-  private async onlineUpdates(workspace: vscode.WorkspaceFolder): Promise<void> {
+  private async onlineUpdates(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<void> {
     const installedDeps = await this.getInstalledDependencies(workspace);
 
     if (installedDeps.length !== 0) {
@@ -209,7 +271,9 @@ export class VendorLibraries extends VendorLibrariesBase {
           return undefined;
         }
       });
-      const results = (await Promise.all(promises)).filter((x) => x !== undefined) as IJsonDependency[];
+      const results = (await Promise.all(promises)).filter(
+        (x) => x !== undefined
+      ) as IJsonDependency[];
       const updatable = [];
       for (const newDep of results) {
         for (const oldDep of installedDeps) {
@@ -231,9 +295,15 @@ export class VendorLibraries extends VendorLibrariesBase {
         if (toUpdate !== undefined) {
           let anySucceeded = false;
           for (const ti of toUpdate) {
-            const success = await this.installDependency(ti.dep, this.getWpVendorFolder(workspace), true);
+            const success = await this.installDependency(
+              ti.dep,
+              this.getWpVendorFolder(workspace),
+              true
+            );
             if (!success) {
-              vscode.window.showErrorMessage(i18n('message', 'Failed to install {0}', ti.dep.name));
+              vscode.window.showErrorMessage(
+                i18n('message', 'Failed to install {0}', ti.dep.name)
+              );
             } else {
               anySucceeded = true;
             }
@@ -243,11 +313,14 @@ export class VendorLibraries extends VendorLibrariesBase {
           }
         }
       } else {
-        vscode.window.showInformationMessage(i18n('message', 'No updates available'));
+        vscode.window.showInformationMessage(
+          i18n('message', 'No updates available')
+        );
       }
-
     } else {
-      vscode.window.showInformationMessage(i18n('message', 'No dependencies installed'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No dependencies installed')
+      );
     }
   }
 
@@ -277,9 +350,15 @@ export class VendorLibraries extends VendorLibrariesBase {
       if (toInstall !== undefined) {
         let anySucceeded = false;
         for (const ti of toInstall) {
-          const success = await this.installDependency(ti.dep, this.getWpVendorFolder(workspace), true);
+          const success = await this.installDependency(
+            ti.dep,
+            this.getWpVendorFolder(workspace),
+            true
+          );
           if (!success) {
-            vscode.window.showErrorMessage(i18n('message', 'Failed to install {0}', ti.dep.name));
+            vscode.window.showErrorMessage(
+              i18n('message', 'Failed to install {0}', ti.dep.name)
+            );
           } else {
             anySucceeded = true;
           }
@@ -289,7 +368,9 @@ export class VendorLibraries extends VendorLibrariesBase {
         }
       }
     } else {
-      vscode.window.showInformationMessage(i18n('message', 'No new dependencies available'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No new dependencies available')
+      );
     }
   }
 
@@ -307,16 +388,24 @@ export class VendorLibraries extends VendorLibrariesBase {
 
       for (const dep of existing) {
         if (dep.uuid === file.uuid) {
-          vscode.window.showWarningMessage(i18n('message', 'Library already installed'));
+          vscode.window.showWarningMessage(
+            i18n('message', 'Library already installed')
+          );
           return;
         }
       }
 
-      const success = await this.installDependency(file, this.getWpVendorFolder(workspace), true);
+      const success = await this.installDependency(
+        file,
+        this.getWpVendorFolder(workspace),
+        true
+      );
       if (success) {
         this.offerBuild(workspace, true);
       } else {
-        vscode.window.showErrorMessage(i18n('message', 'Failed to install {0}', file.name));
+        vscode.window.showErrorMessage(
+          i18n('message', 'Failed to install {0}', file.name)
+        );
       }
     }
   }
@@ -325,16 +414,28 @@ export class VendorLibraries extends VendorLibrariesBase {
     return this.getVendorFolder(workspace.uri.fsPath);
   }
 
-  private getInstalledDependencies(workspace: vscode.WorkspaceFolder): Promise<IJsonDependency[]> {
+  private getInstalledDependencies(
+    workspace: vscode.WorkspaceFolder
+  ): Promise<IJsonDependency[]> {
     return this.getDependencies(this.getWpVendorFolder(workspace));
   }
 
-  public async offerBuild(workspace: vscode.WorkspaceFolder, modal = false): Promise<boolean> {
-    const buildRes = await vscode.window.showInformationMessage(i18n('message',
-      'It is recommended to run a "Build" after a vendor update. ' +
-      'Would you like to do this now?'), {
-        modal: modal
-      }, {title: i18n('ui', 'Yes')}, {title: i18n('ui', 'No'), isCloseAffordance: true});
+  public async offerBuild(
+    workspace: vscode.WorkspaceFolder,
+    modal = false
+  ): Promise<boolean> {
+    const buildRes = await vscode.window.showInformationMessage(
+      i18n(
+        'message',
+        'It is recommended to run a "Build" after a vendor update. ' +
+          'Would you like to do this now?'
+      ),
+      {
+        modal: modal,
+      },
+      { title: i18n('ui', 'Yes') },
+      { title: i18n('ui', 'No'), isCloseAffordance: true }
+    );
     if (buildRes?.title === i18n('ui', 'Yes')) {
       await this.externalApi.getBuildTestAPI().buildCode(workspace, undefined);
       this.lastBuildTime = Date.now();
@@ -348,8 +449,10 @@ export class VendorLibraries extends VendorLibrariesBase {
   }
 }
 
-const eventListener: vscode.EventEmitter<vscode.WorkspaceFolder> = new vscode.EventEmitter<vscode.WorkspaceFolder>();
-export const onVendorDepsChanged: vscode.Event<vscode.WorkspaceFolder> = eventListener.event;
+const eventListener: vscode.EventEmitter<vscode.WorkspaceFolder> =
+  new vscode.EventEmitter<vscode.WorkspaceFolder>();
+export const onVendorDepsChanged: vscode.Event<vscode.WorkspaceFolder> =
+  eventListener.event;
 export function fireVendorDepsChanged(workspace: vscode.WorkspaceFolder): void {
   eventListener.fire(workspace);
 }

@@ -26,10 +26,12 @@ module.exports = [
     },
     resolve: {
       extensions: ['.ts', '.js'],
+      fallback: {
+        net: false,
+        timers: require.resolve('timers-browserify'),
+      },
     },
-    node: {
-      net: 'empty',
-    },
+
     output: {
       path: path.resolve(__dirname, 'resources', 'dist'),
       filename: '[name].js',

@@ -1,8 +1,17 @@
 'use strict';
 import { dialog } from '@electron/remote';
 import { EventEmitter } from 'events';
-import { IErrorMessage, IIPCReceiveMessage, IIPCSendMessage, IPrintMessage, IRioConsole, IRioConsoleProvider,
-         IWindowProvider, IWindowView, RioConsole } from 'wpilib-riolog';
+import {
+  IErrorMessage,
+  IIPCReceiveMessage,
+  IIPCSendMessage,
+  IPrintMessage,
+  IRioConsole,
+  IRioConsoleProvider,
+  IWindowProvider,
+  IWindowView,
+  RioConsole,
+} from 'wpilib-riolog';
 import { writeFileAsync } from '../utilities';
 
 export class RioLogWindowView extends EventEmitter implements IWindowView {
@@ -22,7 +31,9 @@ export class RioLogWindowView extends EventEmitter implements IWindowView {
     return true;
   }
 
-  public async handleSave(saveData: (IPrintMessage | IErrorMessage)[]): Promise<boolean> {
+  public async handleSave(
+    saveData: (IPrintMessage | IErrorMessage)[]
+  ): Promise<boolean> {
     const f = await dialog.showSaveDialog({
       title: 'Select a file to save to',
     });
@@ -40,9 +51,7 @@ export class RioLogWindowView extends EventEmitter implements IWindowView {
     return true;
   }
 
-  public dispose() {
-
-  }
+  public dispose() {}
 }
 
 export class RioLogWebviewProvider implements IWindowProvider {
@@ -59,6 +68,6 @@ export class RioLogWebviewProvider implements IWindowProvider {
 
 export class LiveRioConsoleProvider implements IRioConsoleProvider {
   public getRioConsole(): IRioConsole {
-      return new RioConsole();
+    return new RioConsole();
   }
 }

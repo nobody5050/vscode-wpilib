@@ -1,4 +1,7 @@
-export function validateProject(input: HTMLInputElement, div: HTMLDivElement): boolean {
+export function validateProject(
+  input: HTMLInputElement,
+  div: HTMLDivElement
+): boolean {
   const s = input.value;
   const match = s.match(/\w[\w-]*$/gm);
   if (match === null || match.length === 0) {
@@ -14,10 +17,13 @@ export function validateProject(input: HTMLInputElement, div: HTMLDivElement): b
   }
 }
 
-export function validateTeamNumber(input: HTMLInputElement, div: HTMLDivElement): boolean {
+export function validateTeamNumber(
+  input: HTMLInputElement,
+  div: HTMLDivElement
+): boolean {
   const s = input.value;
   const match = s.match(/^\d{1,5}$/gm);
-  if ((match === null || match.length === 0)) {
+  if (match === null || match.length === 0) {
     div.innerText = 'Invalid Team Number';
 
     div.classList.add('error');

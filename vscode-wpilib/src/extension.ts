@@ -33,12 +33,8 @@ import { ExampleTemplateAPI } from './shared/exampletemplateapi';
 import { UtilitiesAPI } from './shared/utilitiesapi';
 import { addVendorExamples } from './shared/vendorexamples';
 import { ToolAPI } from './toolapi';
-import {
-  existsAsync,
-  mkdirpAsync,
-  setExtensionContext,
-  setJavaHome,
-} from './utilities';
+import { existsAsync, setExtensionContext, setJavaHome } from './utilities';
+import { mkdirp } from 'mkdirp';
 import { fireVendorDepsChanged, VendorLibraries } from './vendorlibraries';
 import { createVsCommands } from './vscommands';
 import { Gradle2020Import } from './webviews/gradle2020import';
@@ -284,8 +280,13 @@ async function handleAfterTrusted(
           continue;
         }
 
-        if ((prefs.getCurrentLanguage() !== 'cpp' && prefs.getCurrentLanguage() !== 'java')) {
-          logger.log('Project with Unknown Language: ' + prefs.getCurrentLanguage());
+        if (
+          prefs.getCurrentLanguage() !== 'cpp' &&
+          prefs.getCurrentLanguage() !== 'java'
+        ) {
+          logger.log(
+            'Project with Unknown Language: ' + prefs.getCurrentLanguage()
+          );
           continue;
         }
 
@@ -512,7 +513,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const logPath = path.join(frcHomeDir, 'logs');
   try {
-    await mkdirpAsync(logPath);
+    await mkdirp(logPath);
     setLoggerDirectory(logPath);
   } catch (err) {
     logger.error('Error creating logger', err);
@@ -610,7 +611,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register the command with arguments
   let disposable = vscode.commands.registerCommand(
-    'extension.showWebsite', 
+    'extension.showWebsite',
     (url: string, tabTitle: string) => {
       // If no arguments were passed, you can prompt the user (optional):
       if (!url) {
@@ -618,17 +619,17 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
       if (!tabTitle) {
-        tabTitle = "My Website"; // fallback title if not provided
+        tabTitle = 'My Website'; // fallback title if not provided
       }
 
       // Create and show a new webview panel
       const panel = vscode.window.createWebviewPanel(
-        'myWebview',      // internal identifier
-        tabTitle,         // use the dynamic title
+        'myWebview', // internal identifier
+        tabTitle, // use the dynamic title
         vscode.ViewColumn.One,
         {
           enableScripts: true,
-          retainContextWhenHidden: true
+          retainContextWhenHidden: true,
         }
       );
 
@@ -638,7 +639,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(disposable);
-  
+
   return externalApi;
 }
 

@@ -23,9 +23,7 @@ export async function projectSelectButtonClick(): Promise<void> {
     buttonLabel: 'Select Folder',
     defaultPath: app.getPath('documents'),
     message: 'Select a folder to put the project in',
-    properties: [
-      'openDirectory',
-    ],
+    properties: ['openDirectory'],
     title: 'Select a folder to put the project in',
   });
   if (paths.filePaths && paths.filePaths.length === 1) {
@@ -37,18 +35,28 @@ export async function projectSelectButtonClick(): Promise<void> {
 }
 
 export function selectProjectType() {
-  const select = document.getElementById('projectTypeSelect') as HTMLSelectElement;
+  const select = document.getElementById(
+    'projectTypeSelect'
+  ) as HTMLSelectElement;
   if (select.value !== 'base') {
     // Not a base, enable lang
-    const baseSelect = document.getElementById('projectBaseSelect') as HTMLSelectElement;
-    const langSelect = document.getElementById('languageSelect') as HTMLSelectElement;
+    const baseSelect = document.getElementById(
+      'projectBaseSelect'
+    ) as HTMLSelectElement;
+    const langSelect = document.getElementById(
+      'languageSelect'
+    ) as HTMLSelectElement;
     langSelect.disabled = false;
     langSelect.value = 'base';
     baseSelect.disabled = true;
     baseSelect.value = 'base';
   } else {
-    const baseSelect = document.getElementById('projectBaseSelect') as HTMLSelectElement;
-    const langSelect = document.getElementById('languageSelect') as HTMLSelectElement;
+    const baseSelect = document.getElementById(
+      'projectBaseSelect'
+    ) as HTMLSelectElement;
+    const langSelect = document.getElementById(
+      'languageSelect'
+    ) as HTMLSelectElement;
     langSelect.disabled = true;
     langSelect.value = 'base';
     baseSelect.disabled = true;
@@ -60,26 +68,37 @@ export function selectLanguage() {
   const select = document.getElementById('languageSelect') as HTMLSelectElement;
   if (select.value !== 'base') {
     // Not a base, enable lang
-    const baseSelect = document.getElementById('projectBaseSelect') as HTMLSelectElement;
-    const typeSelect = document.getElementById('projectTypeSelect') as HTMLSelectElement;
+    const baseSelect = document.getElementById(
+      'projectBaseSelect'
+    ) as HTMLSelectElement;
+    const typeSelect = document.getElementById(
+      'projectTypeSelect'
+    ) as HTMLSelectElement;
     setupBaseSelects(typeSelect.value === 'template', select.value);
     baseSelect.disabled = false;
   } else {
-    const baseSelect = document.getElementById('projectBaseSelect') as HTMLSelectElement;
+    const baseSelect = document.getElementById(
+      'projectBaseSelect'
+    ) as HTMLSelectElement;
     baseSelect.disabled = true;
     baseSelect.value = 'base';
   }
 }
 
 export function selectRobotBase() {
-
   //
 }
 
 export async function generateProjectButtonClick() {
-  const typeSelect = document.getElementById('projectTypeSelect') as HTMLSelectElement;
-  const langSelect = document.getElementById('languageSelect') as HTMLSelectElement;
-  const baseSelect = document.getElementById('projectBaseSelect') as HTMLSelectElement;
+  const typeSelect = document.getElementById(
+    'projectTypeSelect'
+  ) as HTMLSelectElement;
+  const langSelect = document.getElementById(
+    'languageSelect'
+  ) as HTMLSelectElement;
+  const baseSelect = document.getElementById(
+    'projectBaseSelect'
+  ) as HTMLSelectElement;
 
   if (typeSelect.value === 'base' || langSelect.type === 'base') {
     alert('project type or language not selected');
@@ -89,35 +108,63 @@ export async function generateProjectButtonClick() {
     // No base selected, error
     alert('project base not selected');
   } else {
-    await handleProjectGenerate(typeSelect.value === 'template', langSelect.value, baseSelect.value);
+    await handleProjectGenerate(
+      typeSelect.value === 'template',
+      langSelect.value,
+      baseSelect.value
+    );
   }
 }
 
-async function handleProjectGenerate(template: boolean, language: string, base: string) {
-  const isValidProject = validateProject((document.getElementById('projectName') as HTMLInputElement),
-    (document.getElementById('projectnamediv') as HTMLInputElement));
-  const isValidTeam = validateTeamNumber((document.getElementById('teamNumber') as HTMLInputElement),
-    (document.getElementById('teamnumberdiv') as HTMLInputElement));
+async function handleProjectGenerate(
+  template: boolean,
+  language: string,
+  base: string
+) {
+  const isValidProject = validateProject(
+    document.getElementById('projectName') as HTMLInputElement,
+    document.getElementById('projectnamediv') as HTMLInputElement
+  );
+  const isValidTeam = validateTeamNumber(
+    document.getElementById('teamNumber') as HTMLInputElement,
+    document.getElementById('teamnumberdiv') as HTMLInputElement
+  );
   if (!isValidTeam || !isValidProject) {
     alert('Project name and team number must be correct');
     return;
   }
 
-  const projectFolder = (document.getElementById('projectFolder') as HTMLInputElement).value;
-  const projectName = (document.getElementById('projectName') as HTMLInputElement).value;
-  const newFolder = (document.getElementById('newFolderCB') as HTMLInputElement).checked;
-  const teamNumber = (document.getElementById('teamNumber') as HTMLInputElement).value;
-  const desktop = (document.getElementById('desktopCB') as HTMLInputElement).checked;
+  const projectFolder = (
+    document.getElementById('projectFolder') as HTMLInputElement
+  ).value;
+  const projectName = (
+    document.getElementById('projectName') as HTMLInputElement
+  ).value;
+  const newFolder = (document.getElementById('newFolderCB') as HTMLInputElement)
+    .checked;
+  const teamNumber = (document.getElementById('teamNumber') as HTMLInputElement)
+    .value;
+  const desktop = (document.getElementById('desktopCB') as HTMLInputElement)
+    .checked;
 
   if (!path.isAbsolute(projectFolder)) {
     alert('Can only extract to absolute path');
     return;
   }
 
-  await exampleTemplateApi.createProject(template, language, base, projectFolder, newFolder, projectName,
-                                          parseInt(teamNumber, 10));
+  await exampleTemplateApi.createProject(
+    template,
+    language,
+    base,
+    projectFolder,
+    newFolder,
+    projectName,
+    parseInt(teamNumber, 10)
+  );
 
-  const toFolder = newFolder ? path.join(projectFolder, projectName) : projectFolder;
+  const toFolder = newFolder
+    ? path.join(projectFolder, projectName)
+    : projectFolder;
 
   if (desktop) {
     const buildgradle = path.join(toFolder, 'build.gradle');
@@ -157,7 +204,12 @@ window.addEventListener('load', async () => {
   const cppTemplates = new Templates(cppRoot, false, exampleTemplateApi);
   const javaExamples = new Examples(javaRoot, true, exampleTemplateApi);
   const javaTemplates = new Templates(javaRoot, true, exampleTemplateApi);
-  await addVendorExamples(resourceRoot, exampleTemplateApi, utilitesApi, vendorLibsBase);
+  await addVendorExamples(
+    resourceRoot,
+    exampleTemplateApi,
+    utilitesApi,
+    vendorLibsBase
+  );
 
   disposables.push(cppExamples);
   disposables.push(cppTemplates);
@@ -177,7 +229,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 function setupBaseSelects(template: boolean, language: string) {
-  const select = document.getElementById('projectBaseSelect') as HTMLSelectElement;
+  const select = document.getElementById(
+    'projectBaseSelect'
+  ) as HTMLSelectElement;
   select.options.length = 0;
   const baseElement = document.createElement('option'); // new HTMLOptionElement();
   baseElement.value = 'base';

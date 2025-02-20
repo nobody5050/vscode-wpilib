@@ -32,7 +32,9 @@ window.addEventListener('load', () => {
   mainDiv.appendChild(document.createElement('br'));
 
   const generatorButton = document.createElement('button');
-  generatorButton.appendChild(document.createTextNode('Start New Project Generator'));
+  generatorButton.appendChild(
+    document.createTextNode('Start New Project Generator')
+  );
   generatorButton.addEventListener('click', async () => {
     const bWindow = getCurrentWindow();
 
@@ -46,7 +48,9 @@ window.addEventListener('load', () => {
   mainDiv.appendChild(document.createElement('br'));
 
   const vendorDepsButton = document.createElement('button');
-  vendorDepsButton.appendChild(document.createTextNode('Start Vendor Deps Manager'));
+  vendorDepsButton.appendChild(
+    document.createTextNode('Start Vendor Deps Manager')
+  );
   vendorDepsButton.addEventListener('click', async () => {
     const bWindow = getCurrentWindow();
 

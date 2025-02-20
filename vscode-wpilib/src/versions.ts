@@ -10,7 +10,6 @@ interface IVersion {
 
 /** Converts a version string to its corresponding Version object. */
 function parseVersion(version: string): IVersion {
-
   const dashIndex = version.indexOf('-');
   const dashParts: string[] = [];
   if (dashIndex >= 0) {
@@ -33,7 +32,10 @@ function parseVersion(version: string): IVersion {
 }
 
 /** Checks to see if version1 is newer than version2. */
-export function isNewerVersion(version1: IVersion | string, version2: IVersion | string): boolean {
+export function isNewerVersion(
+  version1: IVersion | string,
+  version2: IVersion | string
+): boolean {
   if (typeof version1 === 'string') {
     version1 = parseVersion(version1);
   }

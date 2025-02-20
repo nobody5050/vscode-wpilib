@@ -1,6 +1,7 @@
 'use strict';
 import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
+import * as fsPromises from 'fs/promises';
+import { mkdirp } from 'mkdirp';
 import * as ncp from 'ncp';
 import * as path from 'path';
 import * as util from 'util';
@@ -41,7 +42,9 @@ export async function getPackageName(): Promise<string | undefined> {
   const packageName = await vscode.window.showInputBox({
     prompt: promptString,
     validateInput: (s) => {
-      const match = s.match('^([a-zA-Z_]{1}[a-zA-Z0-9_]*(\\.[a-zA-Z_]{1}[a-zA-Z0-9_]*)*)$');
+      const match = s.match(
+        '^([a-zA-Z_]{1}[a-zA-Z0-9_]*(\\.[a-zA-Z_]{1}[a-zA-Z0-9_]*)*)$'
+      );
 
       if (match === null || match.length === 0) {
         return 'Invalid Package Name';
@@ -53,24 +56,26 @@ export async function getPackageName(): Promise<string | undefined> {
   return packageName;
 }
 
-export const statAsync = util.promisify(fs.stat);
+export const statAsync = fsPromises.stat;
 
-export const readFileAsync = util.promisify(fs.readFile);
+export const readFileAsync = fsPromises.readFile;
 
-export const writeFileAsync = util.promisify(fs.writeFile);
+export const writeFileAsync = fsPromises.writeFile;
 
-export const copyFileAsync = util.promisify(fs.copyFile);
+export const copyFileAsync = fsPromises.copyFile;
 
-export const mkdirAsync = util.promisify(fs.mkdir);
+export const mkdirAsync = fsPromises.mkdir;
 
 export const existsAsync = util.promisify(fs.exists);
 
-export const deleteFileAsync = util.promisify(fs.unlink);
+export const deleteFileAsync = fsPromises.unlink;
 
-export const mkdirpAsync = mkdirp;
-
-export function ncpAsync(source: string, dest: string, options: ncp.Options = {}): Promise<void> {
-  return mkdirpAsync(dest).then(() => {
+export function ncpAsync(
+  source: string,
+  dest: string,
+  options: ncp.Options = {}
+): Promise<void> {
+  return mkdirp(dest).then(() => {
     return new Promise<void>((resolve, reject) => {
       ncp.ncp(source, dest, options, (err) => {
         if (err) {
@@ -83,16 +88,21 @@ export function ncpAsync(source: string, dest: string, options: ncp.Options = {}
   });
 }
 
-export const readdirAsync = util.promisify(fs.readdir);
-
 export let javaHome: string | undefined;
 export function setJavaHome(jhome: string): void {
   javaHome = jhome;
 }
 
-export async function gradleRun(args: string, rootDir: string, workspace: vscode.WorkspaceFolder,
-                                name: string, executeApi: IExecuteAPI, preferences: IPreferences): Promise<number> {
-  let command = './gradlew ' + args + ' ' + preferences.getAdditionalGradleArguments();
+export async function gradleRun(
+  args: string,
+  rootDir: string,
+  workspace: vscode.WorkspaceFolder,
+  name: string,
+  executeApi: IExecuteAPI,
+  preferences: IPreferences
+): Promise<number> {
+  let command =
+    './gradlew ' + args + ' ' + preferences.getAdditionalGradleArguments();
   if (preferences.getOffline()) {
     command += ' --offline';
   }
@@ -107,7 +117,13 @@ export async function gradleRun(args: string, rootDir: string, workspace: vscode
   }
 
   await setExecutePermissions(path.join(workspace.uri.fsPath, 'gradlew'));
-  return executeApi.executeCommand(command, name, rootDir, workspace, varCommands);
+  return executeApi.executeCommand(
+    command,
+    name,
+    rootDir,
+    workspace,
+    varCommands
+  );
 }
 
 export let extensionContext: vscode.ExtensionContext;
@@ -115,13 +131,17 @@ export function setExtensionContext(context: vscode.ExtensionContext): void {
   extensionContext = context;
 }
 
-export function getDesktopEnabled(buildgradle: string): Promise<boolean | undefined> {
+export function getDesktopEnabled(
+  buildgradle: string
+): Promise<boolean | undefined> {
   return new Promise<boolean | undefined>((resolve) => {
     fs.readFile(buildgradle, 'utf8', (err, dataIn) => {
       if (err) {
         resolve(undefined);
       } else {
-        const dataOut = dataIn.match(/def\s+includeDesktopSupport\s*=\s*(true|false)/m);
+        const dataOut = dataIn.match(
+          /def\s+includeDesktopSupport\s*=\s*(true|false)/m
+        );
         if (dataOut === null) {
           resolve(undefined);
         } else {
@@ -132,11 +152,21 @@ export function getDesktopEnabled(buildgradle: string): Promise<boolean | undefi
   });
 }
 
-export async function promptForProjectOpen(toFolder: vscode.Uri): Promise<boolean> {
-  const openSelection = await vscode.window.showInformationMessage(i18n('message',
-      'Project successfully created. Would you like to open the folder?'), {
-    modal: true,
-  }, {title: i18n('ui', 'Yes (Current Window)')}, {title: i18n('ui', 'Yes (New Window)')}, {title: i18n('ui', 'No'), isCloseAffordance: true});
+export async function promptForProjectOpen(
+  toFolder: vscode.Uri
+): Promise<boolean> {
+  const openSelection = await vscode.window.showInformationMessage(
+    i18n(
+      'message',
+      'Project successfully created. Would you like to open the folder?'
+    ),
+    {
+      modal: true,
+    },
+    { title: i18n('ui', 'Yes (Current Window)') },
+    { title: i18n('ui', 'Yes (New Window)') },
+    { title: i18n('ui', 'No'), isCloseAffordance: true }
+  );
   if (openSelection === undefined) {
     return true;
   } else if (openSelection.title === i18n('ui', 'Yes (Current Window)')) {

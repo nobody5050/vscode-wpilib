@@ -1,18 +1,26 @@
 import * as fs from 'fs';
-import * as glob from 'glob';
+import { glob } from 'glob';
 import * as path from 'path';
 import { localize as i18n } from '../locale';
 import { logger } from '../logger';
-import { copyFileAsync, mkdirpAsync, ncpAsync, readdirAsync, readFileAsync, writeFileAsync } from '../utilities';
+import { ncpAsync } from '../utilities';
+import { readdir, copyFile, readFile, writeFile } from 'fs/promises';
+import { mkdirp } from 'mkdirp';
 import { setExecutePermissions } from './permissions';
 
 type CopyCallback = (srcFolder: string, rootFolder: string) => Promise<boolean>;
 
-export async function generateCopyCpp(resourcesFolder: string, fromTemplateFolder: string | CopyCallback, fromTemplateTestFolder: string | undefined,
-                                      fromGradleFolder: string, toFolder: string, directGradleImport: boolean, extraVendordeps: string[]):
-                                      Promise<boolean> {
+export async function generateCopyCpp(
+  resourcesFolder: string,
+  fromTemplateFolder: string | CopyCallback,
+  fromTemplateTestFolder: string | undefined,
+  fromGradleFolder: string,
+  toFolder: string,
+  directGradleImport: boolean,
+  extraVendordeps: string[]
+): Promise<boolean> {
   try {
-    const existingFiles = await readdirAsync(toFolder);
+    const existingFiles = await readdir(toFolder);
     if (existingFiles.length > 0) {
       logger.warn('folder not empty');
       return false;
@@ -24,14 +32,13 @@ export async function generateCopyCpp(resourcesFolder: string, fromTemplateFolde
       codePath = path.join(toFolder, 'src');
     }
 
-
     const gradleRioFrom = '###GRADLERIOREPLACE###';
 
     const grRoot = path.dirname(fromGradleFolder);
 
     const grVersionFile = path.join(grRoot, 'version.txt');
 
-    const grVersionTo = (await readFileAsync(grVersionFile, 'utf8')).trim();
+    const grVersionTo = (await readFile(grVersionFile, 'utf8')).trim();
 
     if (typeof fromTemplateFolder === 'string') {
       await ncpAsync(fromTemplateFolder, codePath);
@@ -69,7 +76,10 @@ export async function generateCopyCpp(resourcesFolder: string, fromTemplateFolde
         if (err) {
           resolve();
         } else {
-          const dataOut = dataIn.replace(new RegExp(gradleRioFrom, 'g'), grVersionTo);
+          const dataOut = dataIn.replace(
+            new RegExp(gradleRioFrom, 'g'),
+            grVersionTo
+          );
           fs.writeFile(buildgradle, dataOut, 'utf8', (err1) => {
             if (err1) {
               reject(err);
@@ -84,31 +94,54 @@ export async function generateCopyCpp(resourcesFolder: string, fromTemplateFolde
     if (!directGradleImport) {
       const deployDir = path.join(toFolder, 'src', 'main', 'deploy');
 
-      await mkdirpAsync(deployDir);
+      await mkdirp(deployDir);
 
-      await writeFileAsync(path.join(deployDir, 'example.txt'), i18n('generator', ['generateCppDeployHint',
-        `Files placed in this directory will be deployed to the RoboRIO into the
+      await writeFile(
+        path.join(deployDir, 'example.txt'),
+        i18n('generator', [
+          'generateCppDeployHint',
+          `Files placed in this directory will be deployed to the RoboRIO into the
   'deploy' directory in the home folder. Use the 'frc::filesystem::GetDeployDirectory'
   function from the 'frc/Filesystem.h' header to get a proper path relative to the deploy
-  directory.` ]));
+  directory.`,
+        ])
+      );
     }
 
     const vendorDir = path.join(toFolder, 'vendordeps');
-    await mkdirpAsync(vendorDir);
+    await mkdirp(vendorDir);
 
     const commandName = 'WPILibNewCommands.json';
-    const vendorFile = path.join(path.dirname(resourcesFolder), 'vendordeps', commandName);
-    await copyFileAsync(vendorFile, path.join(vendorDir, commandName));
+    const vendorFile = path.join(
+      path.dirname(resourcesFolder),
+      'vendordeps',
+      commandName
+    );
+    await copyFile(vendorFile, path.join(vendorDir, commandName));
 
     for (const vendordep of extraVendordeps) {
       if (vendordep === 'romi') {
         const romiVendordepName = 'RomiVendordep.json';
-        const romiVendordepFile = path.join(path.dirname(resourcesFolder), 'vendordeps', romiVendordepName);
-        await copyFileAsync(romiVendordepFile, path.join(vendorDir, romiVendordepName));
+        const romiVendordepFile = path.join(
+          path.dirname(resourcesFolder),
+          'vendordeps',
+          romiVendordepName
+        );
+        await copyFile(
+          romiVendordepFile,
+          path.join(vendorDir, romiVendordepName)
+        );
       } else if (vendordep === 'xrp') {
         const xrpVendordepName = 'XRPVendordep.json';
-        const xrpVendordepFile = path.join(path.dirname(resourcesFolder), 'vendordeps', xrpVendordepName);
-        await copyFileAsync(xrpVendordepFile, path.join(vendorDir, xrpVendordepName));
+        const xrpVendordepFile = path.join(
+          path.dirname(resourcesFolder),
+          'vendordeps',
+          xrpVendordepName
+        );
+        await copyFile(
+          xrpVendordepFile,
+          path.join(vendorDir, xrpVendordepName)
+        );
       }
     }
 
@@ -119,12 +152,20 @@ export async function generateCopyCpp(resourcesFolder: string, fromTemplateFolde
   }
 }
 
-export async function generateCopyJava(resourcesFolder: string, fromTemplateFolder: string | CopyCallback, fromTemplateTestFolder: string | undefined,
-                                       fromGradleFolder: string, toFolder: string, robotClassTo: string, copyRoot: string,
-                                       directGradleImport: boolean, extraVendordeps: string[], packageReplaceString?: string | undefined):
-                                       Promise<boolean> {
+export async function generateCopyJava(
+  resourcesFolder: string,
+  fromTemplateFolder: string | CopyCallback,
+  fromTemplateTestFolder: string | undefined,
+  fromGradleFolder: string,
+  toFolder: string,
+  robotClassTo: string,
+  copyRoot: string,
+  directGradleImport: boolean,
+  extraVendordeps: string[],
+  packageReplaceString?: string | undefined
+): Promise<boolean> {
   try {
-    const existingFiles = await readdirAsync(toFolder);
+    const existingFiles = await readdir(toFolder);
     if (existingFiles.length > 0) {
       return false;
     }
@@ -146,23 +187,20 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
       await ncpAsync(fromTemplateTestFolder, testPath);
     }
 
-    const files = await new Promise<string[]>((resolve, reject) => {
-      glob('**/*{.java,.gradle}', {
-        cwd: codePath,
-        nodir: true,
-        nomount: true,
-      }, (err, matches) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(matches);
-        }
-      });
+    const files = await glob('**/*{.java,.gradle}', {
+      cwd: codePath,
+      nodir: true,
+      /* glob has removed mounting behavior
+           todo: check whether this means that nomount is always true, or
+           if something else needs to be done
+        */
+      // nomount: true,
     });
 
     // Package replace inside the template
 
-    const replacePackageFrom = 'edu\\.wpi\\.first\\.wpilibj\\.(?:examples|templates)\\..+?(?=;|\\.)';
+    const replacePackageFrom =
+      'edu\\.wpi\\.first\\.wpilibj\\.(?:examples|templates)\\..+?(?=;|\\.)';
     const replacePackageTo = 'frc.robot';
 
     const robotClassFrom = '###ROBOTCLASSREPLACE###';
@@ -172,58 +210,27 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
 
     const grVersionFile = path.join(grRoot, 'version.txt');
 
-    const grVersionTo = (await readFileAsync(grVersionFile, 'utf8')).trim();
+    const grVersionTo = (await readFile(grVersionFile, 'utf8')).trim();
 
     const promiseArray: Promise<void>[] = [];
 
     for (const f of files) {
       const file = path.join(codePath, f);
-      promiseArray.push(new Promise<void>((resolve, reject) => {
-        fs.readFile(file, 'utf8', (err, dataIn) => {
-          if (err) {
-            reject(err);
-          } else {
-            let dataOut = dataIn.replace(new RegExp(replacePackageFrom, 'g'), replacePackageTo);
-            if (packageReplaceString !== undefined) {
-              dataOut = dataOut.replace(new RegExp(packageReplaceString, 'g'), replacePackageTo);
-            }
-            fs.writeFile(file, dataOut, 'utf8', (err1) => {
-              if (err1) {
-                reject(err);
-              } else {
-                resolve();
-              }
-            });
-          }
-        });
-      }));
-    }
-
-    if (fromTemplateTestFolder !== undefined) {
-      const testFiles = await new Promise<string[]>((resolve, reject) => {
-        glob('**/*{.java,.gradle}', {
-          cwd: testPath,
-          nodir: true,
-          nomount: true,
-        }, (err, matches) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(matches);
-          }
-        });
-      });
-
-      for (const f of testFiles) {
-        const file = path.join(testPath, f);
-        promiseArray.push(new Promise<void>((resolve, reject) => {
+      promiseArray.push(
+        new Promise<void>((resolve, reject) => {
           fs.readFile(file, 'utf8', (err, dataIn) => {
             if (err) {
               reject(err);
             } else {
-              let dataOut = dataIn.replace(new RegExp(replacePackageFrom, 'g'), replacePackageTo);
+              let dataOut = dataIn.replace(
+                new RegExp(replacePackageFrom, 'g'),
+                replacePackageTo
+              );
               if (packageReplaceString !== undefined) {
-                dataOut = dataOut.replace(new RegExp(packageReplaceString, 'g'), replacePackageTo);
+                dataOut = dataOut.replace(
+                  new RegExp(packageReplaceString, 'g'),
+                  replacePackageTo
+                );
               }
               fs.writeFile(file, dataOut, 'utf8', (err1) => {
                 if (err1) {
@@ -234,7 +241,50 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
               });
             }
           });
-        }));
+        })
+      );
+    }
+
+    if (fromTemplateTestFolder !== undefined) {
+      const testFiles = await glob('**/*{.java,.gradle}', {
+        cwd: testPath,
+        nodir: true,
+        /* glob has removed mounting behavior
+           todo: check whether this means that nomount is always true, or
+           if something else needs to be done
+        */
+        // nomount: true,
+      });
+
+      for (const f of testFiles) {
+        const file = path.join(testPath, f);
+        promiseArray.push(
+          new Promise<void>((resolve, reject) => {
+            fs.readFile(file, 'utf8', (err, dataIn) => {
+              if (err) {
+                reject(err);
+              } else {
+                let dataOut = dataIn.replace(
+                  new RegExp(replacePackageFrom, 'g'),
+                  replacePackageTo
+                );
+                if (packageReplaceString !== undefined) {
+                  dataOut = dataOut.replace(
+                    new RegExp(packageReplaceString, 'g'),
+                    replacePackageTo
+                  );
+                }
+                fs.writeFile(file, dataOut, 'utf8', (err1) => {
+                  if (err1) {
+                    reject(err);
+                  } else {
+                    resolve();
+                  }
+                });
+              }
+            });
+          })
+        );
       }
     }
 
@@ -268,7 +318,8 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
         if (err) {
           resolve();
         } else {
-          const dataOut = dataIn.replace(new RegExp(robotClassFrom, 'g'), robotClassTo)
+          const dataOut = dataIn
+            .replace(new RegExp(robotClassFrom, 'g'), robotClassTo)
             .replace(new RegExp(gradleRioFrom, 'g'), grVersionTo);
           fs.writeFile(buildgradle, dataOut, 'utf8', (err1) => {
             if (err1) {
@@ -284,29 +335,52 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
     if (!directGradleImport) {
       const deployDir = path.join(toFolder, 'src', 'main', 'deploy');
 
-      await mkdirpAsync(deployDir);
+      await mkdirp(deployDir);
 
-      await writeFileAsync(path.join(deployDir, 'example.txt'), i18n('generator', ['generateJavaDeployHint',
-        `Files placed in this directory will be deployed to the RoboRIO into the
+      await writeFile(
+        path.join(deployDir, 'example.txt'),
+        i18n('generator', [
+          'generateJavaDeployHint',
+          `Files placed in this directory will be deployed to the RoboRIO into the
 'deploy' directory in the home folder. Use the 'Filesystem.getDeployDirectory' wpilib function
-to get a proper path relative to the deploy directory.` ]));
+to get a proper path relative to the deploy directory.`,
+        ])
+      );
     }
 
     const vendorDir = path.join(toFolder, 'vendordeps');
-    await mkdirpAsync(vendorDir);
+    await mkdirp(vendorDir);
     const commandName = 'WPILibNewCommands.json';
-    const vendorFile = path.join(path.dirname(resourcesFolder), 'vendordeps', commandName);
-    await copyFileAsync(vendorFile, path.join(vendorDir, commandName));
+    const vendorFile = path.join(
+      path.dirname(resourcesFolder),
+      'vendordeps',
+      commandName
+    );
+    await copyFile(vendorFile, path.join(vendorDir, commandName));
 
     for (const vendordep of extraVendordeps) {
       if (vendordep === 'romi') {
         const romiVendordepName = 'RomiVendordep.json';
-        const romiVendordepFile = path.join(path.dirname(resourcesFolder), 'vendordeps', romiVendordepName);
-        await copyFileAsync(romiVendordepFile, path.join(vendorDir, romiVendordepName));
+        const romiVendordepFile = path.join(
+          path.dirname(resourcesFolder),
+          'vendordeps',
+          romiVendordepName
+        );
+        await copyFile(
+          romiVendordepFile,
+          path.join(vendorDir, romiVendordepName)
+        );
       } else if (vendordep === 'xrp') {
         const xrpVendordepName = 'XRPVendordep.json';
-        const xrpVendordepFile = path.join(path.dirname(resourcesFolder), 'vendordeps', xrpVendordepName);
-        await copyFileAsync(xrpVendordepFile, path.join(vendorDir, xrpVendordepName));
+        const xrpVendordepFile = path.join(
+          path.dirname(resourcesFolder),
+          'vendordeps',
+          xrpVendordepName
+        );
+        await copyFile(
+          xrpVendordepFile,
+          path.join(vendorDir, xrpVendordepName)
+        );
       }
     }
 
@@ -317,14 +391,19 @@ to get a proper path relative to the deploy directory.` ]));
   }
 }
 
-export function setDesktopEnabled(buildgradle: string, setting: boolean): Promise<void> {
+export function setDesktopEnabled(
+  buildgradle: string,
+  setting: boolean
+): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     fs.readFile(buildgradle, 'utf8', (err, dataIn) => {
       if (err) {
         resolve();
       } else {
-        const dataOut = dataIn.replace(/def\s+includeDesktopSupport\s*=\s*(true|false)/gm,
-          `def includeDesktopSupport = ${setting ? 'true' : 'false'}`);
+        const dataOut = dataIn.replace(
+          /def\s+includeDesktopSupport\s*=\s*(true|false)/gm,
+          `def includeDesktopSupport = ${setting ? 'true' : 'false'}`
+        );
         fs.writeFile(buildgradle, dataOut, 'utf8', (err1) => {
           if (err1) {
             reject(err);

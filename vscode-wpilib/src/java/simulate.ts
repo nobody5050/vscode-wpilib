@@ -16,12 +16,15 @@ interface IEnvMap {
   [key: string]: unknown;
 }
 
-export async function startSimulation(commands: ISimulateCommands): Promise<void> {
+export async function startSimulation(
+  commands: ISimulateCommands
+): Promise<void> {
   const env: IEnvMap = {
     HALSIM_EXTENSIONS: commands.extensions,
   };
   if (getIsWindows()) {
-    env.PATH = commands.librarydir + ';' + process.env.SYSTEMROOT + '\\system32\\';
+    env.PATH =
+      commands.librarydir + ';' + process.env.SYSTEMROOT + '\\system32\\';
   } else {
     env.DYLD_LIBRARY_PATH = commands.librarydir;
     env.LD_LIBRARY_PATH = commands.librarydir;

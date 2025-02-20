@@ -14,12 +14,18 @@ import { DeployDebug } from './deploydebug';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export async function activateCpp(context: vscode.ExtensionContext, coreExports: IExternalAPI) {
-
+export async function activateCpp(
+  context: vscode.ExtensionContext,
+  coreExports: IExternalAPI
+) {
   // Use the console to output diagnostic information (logger.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
 
-  const extensionResourceLocation = path.join(context.extensionPath, 'resources', 'cpp');
+  const extensionResourceLocation = path.join(
+    context.extensionPath,
+    'resources',
+    'cpp'
+  );
 
   const preferences = coreExports.getPreferencesAPI();
   const exampleTemplate = coreExports.getExampleTemplateAPI();
@@ -46,12 +52,24 @@ export async function activateCpp(context: vscode.ExtensionContext, coreExports:
   context.subscriptions.push(deployDebug);
 
   // Setup commands
-  const commands: Commands = new Commands(extensionResourceLocation, commandApi, preferences);
+  const commands: Commands = new Commands(
+    extensionResourceLocation,
+    commandApi,
+    preferences
+  );
   context.subscriptions.push(commands);
 
   // Setup examples and template
-  const examples: Examples = new Examples(extensionResourceLocation, false, exampleTemplate);
+  const examples: Examples = new Examples(
+    extensionResourceLocation,
+    false,
+    exampleTemplate
+  );
   context.subscriptions.push(examples);
-  const templates: Templates = new Templates(extensionResourceLocation, false, exampleTemplate);
+  const templates: Templates = new Templates(
+    extensionResourceLocation,
+    false,
+    exampleTemplate
+  );
   context.subscriptions.push(templates);
 }

@@ -15,8 +15,6 @@ export function getIsWindows(): boolean {
   return nodePlatform === 'win32';
 }
 
-export const statAsync = util.promisify(fs.stat);
-
 export const existsAsync = util.promisify(fs.exists);
 
 export const copyFileAsync = util.promisify(fs.copyFile);
@@ -29,10 +27,14 @@ export const writeFileAsync = util.promisify(fs.writeFile);
 
 export const readdirAsync = util.promisify(fs.readdir);
 
-export const mkdirpAsync = mkdirp;
+export const mkdirp = mkdirp;
 
-export function ncpAsync(source: string, dest: string, options: ncp.Options = {}): Promise<void> {
-  return mkdirpAsync(dest).then(() => {
+export function ncpAsync(
+  source: string,
+  dest: string,
+  options: ncp.Options = {}
+): Promise<void> {
+  return mkdirp(dest).then(() => {
     return new Promise<void>((resolve, reject) => {
       ncp.ncp(source, dest, options, (err) => {
         if (err) {
@@ -56,7 +58,9 @@ class ExtensionContext implements vscode.ExtensionContext {
 
 export const extensionContext: vscode.ExtensionContext = new ExtensionContext();
 
-export async function promptForProjectOpen(toFolder: vscode.Uri): Promise<boolean> {
+export async function promptForProjectOpen(
+  toFolder: vscode.Uri
+): Promise<boolean> {
   const r = await dialog.showMessageBox({
     buttons: ['Open Folder', 'OK'],
     message: 'Creation of project complete: ' + toFolder.fsPath,

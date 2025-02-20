@@ -1,6 +1,15 @@
 'use strict';
 
-import { IDisposable, IIPCReceiveMessage, IRioConsole, IRioConsoleProvider, IWindowProvider, IWindowView, ReceiveTypes, SendTypes } from './interfaces';
+import {
+  IDisposable,
+  IIPCReceiveMessage,
+  IRioConsole,
+  IRioConsoleProvider,
+  IWindowProvider,
+  IWindowView,
+  ReceiveTypes,
+  SendTypes,
+} from './interfaces';
 import { IErrorMessage, IPrintMessage } from './message';
 
 export class RioLogWindow {
@@ -14,7 +23,10 @@ export class RioLogWindow {
   private windowProvider: IWindowProvider;
   private rioConsoleProvider: IRioConsoleProvider;
 
-  constructor(windowProv: IWindowProvider, rioConProivder: IRioConsoleProvider) {
+  constructor(
+    windowProv: IWindowProvider,
+    rioConProivder: IRioConsoleProvider
+  ) {
     this.windowProvider = windowProv;
     this.rioConsoleProvider = rioConProivder;
   }
@@ -47,9 +59,12 @@ export class RioLogWindow {
       await this.onConnectionChanged(c);
     });
 
-    this.rioConsole.on('message', async (message: IPrintMessage | IErrorMessage) => {
-      await this.onNewMessageToSend(message);
-    });
+    this.rioConsole.on(
+      'message',
+      async (message: IPrintMessage | IErrorMessage) => {
+        await this.onNewMessageToSend(message);
+      }
+    );
 
     this.rioConsole.setTeamNumber(teamNumber);
     this.rioConsole.startListening();
@@ -144,7 +159,6 @@ export class RioLogWindow {
       const success = await this.webview.postMessage({
         message,
         type: SendTypes.New,
-
       });
       if (!success) {
         this.hiddenArray.push(message);

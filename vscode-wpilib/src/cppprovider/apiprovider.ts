@@ -4,7 +4,12 @@ import * as jsonc from 'jsonc-parser';
 import * as mm from 'micromatch';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { CppToolsApi, CustomConfigurationProvider, SourceFileConfigurationItem, WorkspaceBrowseConfiguration } from 'vscode-cpptools';
+import {
+  CppToolsApi,
+  CustomConfigurationProvider,
+  SourceFileConfigurationItem,
+  WorkspaceBrowseConfiguration,
+} from 'vscode-cpptools';
 import { IExecuteAPI, IExternalAPI, IPreferences } from 'vscode-wpilibapi';
 import { logger } from '../logger';
 import { PersistentFolderState } from '../persistentState';
@@ -13,7 +18,7 @@ import { onVendorDepsChanged } from '../vendorlibraries';
 import { HeaderExplorer } from './headertreeprovider';
 import { ISource, IToolChain } from './jsonformats';
 
-const isWindows = (process.platform === 'win32');
+const isWindows = process.platform === 'win32';
 
 function hasDriveLetter(pth: string): boolean {
   return isWindows && pth[1] === ':';
@@ -31,15 +36,32 @@ function normalizeDriveLetter(pth: string): string {
   return pth;
 }
 
-function getVersionFromArg(arg: string):
-    'c89' | 'c99' | 'c11' | 'c17' | 'c++98' | 'c++03' | 'c++11' | 'c++14' | 'c++17' | 'c++20' | 'c++23' | undefined {
+function getVersionFromArg(
+  arg: string
+):
+  | 'c89'
+  | 'c99'
+  | 'c11'
+  | 'c17'
+  | 'c++98'
+  | 'c++03'
+  | 'c++11'
+  | 'c++14'
+  | 'c++17'
+  | 'c++20'
+  | 'c++23'
+  | undefined {
   const lowerArg = arg.toLowerCase();
   if (lowerArg.startsWith('-std') || lowerArg.startsWith('/std')) {
     if (lowerArg.indexOf('++') > 0) {
       // C++ mode
       if (lowerArg.indexOf('23') >= 0 || lowerArg.indexOf('2b') > 0) {
         return 'c++23';
-      } else if (lowerArg.indexOf('latest') >= 0 || lowerArg.indexOf('20') >= 0 || lowerArg.indexOf('2a') > 0) {
+      } else if (
+        lowerArg.indexOf('latest') >= 0 ||
+        lowerArg.indexOf('20') >= 0 ||
+        lowerArg.indexOf('2a') > 0
+      ) {
         return 'c++20';
       } else if (lowerArg.indexOf('17') >= 0 || lowerArg.indexOf('1z') >= 0) {
         return 'c++17';
@@ -119,8 +141,15 @@ export class ApiProvider implements CustomConfigurationProvider {
 
   private executeApi: IExecuteAPI;
 
-  constructor(workspace: vscode.WorkspaceFolder, cppToolsApi: CppToolsApi, externalApi: IExternalAPI, headerTreeProvider: HeaderExplorer) {
-    this.preferences = externalApi.getPreferencesAPI().getPreferences(workspace);
+  constructor(
+    workspace: vscode.WorkspaceFolder,
+    cppToolsApi: CppToolsApi,
+    externalApi: IExternalAPI,
+    headerTreeProvider: HeaderExplorer
+  ) {
+    this.preferences = externalApi
+      .getPreferencesAPI()
+      .getPreferences(workspace);
     this.workspace = workspace;
     this.cppToolsApi = cppToolsApi;
     this.executeApi = externalApi.getExecuteAPI();
@@ -129,33 +158,56 @@ export class ApiProvider implements CustomConfigurationProvider {
 
     const fsPath = workspace.uri.fsPath;
 
-    this.configRelativePattern = new vscode.RelativePattern(path.join(fsPath, 'build'), this.configFile);
-    this.configWatcher = vscode.workspace.createFileSystemWatcher(this.configRelativePattern);
+    this.configRelativePattern = new vscode.RelativePattern(
+      path.join(fsPath, 'build'),
+      this.configFile
+    );
+    this.configWatcher = vscode.workspace.createFileSystemWatcher(
+      this.configRelativePattern
+    );
     this.disposables.push(this.configWatcher);
-    this.selectedName = new PersistentFolderState<string>('gradleProperties.selectedName', 'none', fsPath);
+    this.selectedName = new PersistentFolderState<string>(
+      'gradleProperties.selectedName',
+      'none',
+      fsPath
+    );
 
-    this.enabledBinaryTypes = new PersistentFolderState<IEnabledBuildTypes>('gradleProperties.enabledBinaryTypes', {
-      executables: true,
-      sharedLibraries: true,
-      staticLibraries: true,
-    }, fsPath);
+    this.enabledBinaryTypes = new PersistentFolderState<IEnabledBuildTypes>(
+      'gradleProperties.enabledBinaryTypes',
+      {
+        executables: true,
+        sharedLibraries: true,
+        staticLibraries: true,
+      },
+      fsPath
+    );
 
-    this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 2);
+    this.statusBar = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      2
+    );
     this.statusBar.text = this.selectedName.Value;
     this.statusBar.tooltip = 'Click to change toolchain';
     this.statusBar.command = 'wpilibcore.selectCppToolchain';
 
     this.disposables.push(this.statusBar);
 
-    this.binaryTypeStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 3);
+    this.binaryTypeStatusBar = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      3
+    );
     this.binaryTypeStatusBar.text = 'Binary Types';
     this.binaryTypeStatusBar.tooltip = 'Click to change enabled binary types';
     this.binaryTypeStatusBar.command = 'wpilibcore.selectCppBinaryTypes';
 
     this.disposables.push(this.binaryTypeStatusBar);
 
-    this.disposables.push(this.configWatcher.onDidChange(this.onCreateOrChange, this));
-    this.disposables.push(this.configWatcher.onDidCreate(this.onCreateOrChange, this));
+    this.disposables.push(
+      this.configWatcher.onDidChange(this.onCreateOrChange, this)
+    );
+    this.disposables.push(
+      this.configWatcher.onDidCreate(this.onCreateOrChange, this)
+    );
     this.disposables.push(this.configWatcher.onDidDelete(this.onDelete, this));
 
     this.setupWatchers();
@@ -163,18 +215,26 @@ export class ApiProvider implements CustomConfigurationProvider {
     this.loadConfigs().catch();
   }
 
-  public async canProvideBrowseConfigurationsPerFolder(_?: vscode.CancellationToken | undefined): Promise<boolean> {
+  public async canProvideBrowseConfigurationsPerFolder(
+    _?: vscode.CancellationToken | undefined
+  ): Promise<boolean> {
     return false;
   }
-  public async provideFolderBrowseConfiguration(_: vscode.Uri, __?: vscode.CancellationToken | undefined)
-    : Promise<WorkspaceBrowseConfiguration> {
+  public async provideFolderBrowseConfiguration(
+    _: vscode.Uri,
+    __?: vscode.CancellationToken | undefined
+  ): Promise<WorkspaceBrowseConfiguration> {
     throw new Error('Method not supported.');
   }
 
-  public async canProvideBrowseConfiguration(_?: vscode.CancellationToken | undefined): Promise<boolean> {
+  public async canProvideBrowseConfiguration(
+    _?: vscode.CancellationToken | undefined
+  ): Promise<boolean> {
     return true;
   }
-  public async provideBrowseConfiguration(_?: vscode.CancellationToken | undefined): Promise<WorkspaceBrowseConfiguration> {
+  public async provideBrowseConfiguration(
+    _?: vscode.CancellationToken | undefined
+  ): Promise<WorkspaceBrowseConfiguration> {
     const browsePath: string[] = [];
     let compilerPath;
     for (const tc of this.toolchains) {
@@ -198,7 +258,10 @@ export class ApiProvider implements CustomConfigurationProvider {
     }
   }
 
-  public async canProvideConfiguration(uri: vscode.Uri, _: vscode.CancellationToken | undefined): Promise<boolean> {
+  public async canProvideConfiguration(
+    uri: vscode.Uri,
+    _: vscode.CancellationToken | undefined
+  ): Promise<boolean> {
     const fileWp = vscode.workspace.getWorkspaceFolder(uri);
     if (fileWp === undefined || fileWp.index !== this.workspace.index) {
       return false;
@@ -206,7 +269,10 @@ export class ApiProvider implements CustomConfigurationProvider {
     return this.findMatchingBinary(uri);
   }
 
-  public async provideConfigurations(uris: vscode.Uri[], _: vscode.CancellationToken | undefined): Promise<SourceFileConfigurationItem[]> {
+  public async provideConfigurations(
+    uris: vscode.Uri[],
+    _: vscode.CancellationToken | undefined
+  ): Promise<SourceFileConfigurationItem[]> {
     const ret: SourceFileConfigurationItem[] = [];
 
     for (const uri of uris) {
@@ -230,7 +296,10 @@ export class ApiProvider implements CustomConfigurationProvider {
 
     let file = '';
     try {
-      file = await readFileAsync(path.join(this.workspace.uri.fsPath, 'build', this.configFile), 'utf8');
+      file = await readFileAsync(
+        path.join(this.workspace.uri.fsPath, 'build', this.configFile),
+        'utf8'
+      );
     } catch (err) {
       this.statusBar.show();
       this.binaryTypeStatusBar.show();
@@ -308,13 +377,23 @@ export class ApiProvider implements CustomConfigurationProvider {
       this.cppToolsApi.notifyReady(this);
       const currentToolChain = this.getCurrentToolChain();
       if (currentToolChain) {
-        this.headerTreeProvider.updateToolChains(currentToolChain, this.enabledBinaryTypes.Value);
+        this.headerTreeProvider.updateToolChains(
+          currentToolChain,
+          this.enabledBinaryTypes.Value
+        );
       }
-      await vscode.commands.executeCommand('setContext', 'isWPILibProvidedCpp', true);
+      await vscode.commands.executeCommand(
+        'setContext',
+        'isWPILibProvidedCpp',
+        true
+      );
     } else {
       const currentToolChain = this.getCurrentToolChain();
       if (currentToolChain) {
-        this.headerTreeProvider.updateToolChains(currentToolChain, this.enabledBinaryTypes.Value);
+        this.headerTreeProvider.updateToolChains(
+          currentToolChain,
+          this.enabledBinaryTypes.Value
+        );
       }
       this.cppToolsApi.didChangeCustomConfiguration(this);
     }
@@ -346,7 +425,6 @@ export class ApiProvider implements CustomConfigurationProvider {
         label: 'Shared Libraries',
         picked: currentTypes.sharedLibraries,
         type: 'shared',
-
       },
       {
         label: 'Static Libraries',
@@ -380,7 +458,10 @@ export class ApiProvider implements CustomConfigurationProvider {
     this.enabledBinaryTypes.Value = currentTypes;
     const currentToolChain = this.getCurrentToolChain();
     if (currentToolChain) {
-      this.headerTreeProvider.updateToolChains(currentToolChain, this.enabledBinaryTypes.Value);
+      this.headerTreeProvider.updateToolChains(
+        currentToolChain,
+        this.enabledBinaryTypes.Value
+      );
     }
   }
 
@@ -390,9 +471,14 @@ export class ApiProvider implements CustomConfigurationProvider {
       selections.push(`${c.name} (${c.buildType})`);
     }
     if (selections.length === 0) {
-      const configResult = await vscode.window.showInformationMessage('No intellisense configured. Would you like to enable intellisense?', {
-        modal: true,
-      }, {title: 'Yes'}, {title: 'No', isCloseAffordance: true});
+      const configResult = await vscode.window.showInformationMessage(
+        'No intellisense configured. Would you like to enable intellisense?',
+        {
+          modal: true,
+        },
+        { title: 'Yes' },
+        { title: 'No', isCloseAffordance: true }
+      );
       if (configResult?.title === 'Yes') {
         await this.runGradleRefresh();
       }
@@ -409,14 +495,24 @@ export class ApiProvider implements CustomConfigurationProvider {
       this.statusBar.text = result;
       const currentToolChain = this.getCurrentToolChain();
       if (currentToolChain) {
-        this.headerTreeProvider.updateToolChains(currentToolChain, this.enabledBinaryTypes.Value);
+        this.headerTreeProvider.updateToolChains(
+          currentToolChain,
+          this.enabledBinaryTypes.Value
+        );
       }
       this.cppToolsApi.didChangeCustomConfiguration(this);
     }
   }
 
   public runGradleRefresh(): Promise<number> {
-    return gradleRun('generateVsCodeConfig', this.workspace.uri.fsPath, this.workspace, 'C++ Configuration', this.executeApi, this.preferences);
+    return gradleRun(
+      'generateVsCodeConfig',
+      this.workspace.uri.fsPath,
+      this.workspace,
+      'C++ Configuration',
+      this.executeApi,
+      this.preferences
+    );
   }
 
   public dispose() {
@@ -431,22 +527,42 @@ export class ApiProvider implements CustomConfigurationProvider {
 
   private setupWatchers() {
     if (this.gradleWatcher === undefined) {
-      const gradlePattern = new vscode.RelativePattern(this.workspace, '**/*.gradle');
+      const gradlePattern = new vscode.RelativePattern(
+        this.workspace,
+        '**/*.gradle'
+      );
 
-      this.gradleWatcher = vscode.workspace.createFileSystemWatcher(gradlePattern);
+      this.gradleWatcher =
+        vscode.workspace.createFileSystemWatcher(gradlePattern);
       this.disposables.push(this.gradleWatcher);
 
-      this.gradleWatcher.onDidChange(this.couldBeUpdated, this, this.disposables);
+      this.gradleWatcher.onDidChange(
+        this.couldBeUpdated,
+        this,
+        this.disposables
+      );
 
-      this.gradleWatcher.onDidCreate(this.couldBeUpdated, this, this.disposables);
+      this.gradleWatcher.onDidCreate(
+        this.couldBeUpdated,
+        this,
+        this.disposables
+      );
 
-      this.gradleWatcher.onDidDelete(this.couldBeUpdated, this, this.disposables);
+      this.gradleWatcher.onDidDelete(
+        this.couldBeUpdated,
+        this,
+        this.disposables
+      );
 
-      onVendorDepsChanged(async (wp) => {
-        if (wp.index === this.workspace.index) {
-          await this.couldBeUpdated();
-        }
-      }, this, this.disposables);
+      onVendorDepsChanged(
+        async (wp) => {
+          if (wp.index === this.workspace.index) {
+            await this.couldBeUpdated();
+          }
+        },
+        this,
+        this.disposables
+      );
     }
   }
 
@@ -460,8 +576,11 @@ export class ApiProvider implements CustomConfigurationProvider {
     if (!ApiProvider.promptForUpdates) {
       return;
     }
-    const result = await vscode.window.showInformationMessage('Intellisense configurations might have been updated. Refresh them now?',
-      {title: 'Yes'}, {title: 'No', isCloseAffordance: true});
+    const result = await vscode.window.showInformationMessage(
+      'Intellisense configurations might have been updated. Refresh them now?',
+      { title: 'Yes' },
+      { title: 'No', isCloseAffordance: true }
+    );
     if (result && result.title === 'Yes') {
       await this.runGradleRefresh();
     }
@@ -485,15 +604,25 @@ export class ApiProvider implements CustomConfigurationProvider {
     for (const tc of this.toolchains) {
       if (getToolchainName(tc) === this.selectedName.Value) {
         for (const sb of tc.sourceBinaries) {
-          if (sb.executable === true && currentBinaryTypes.executables === false) {
+          if (
+            sb.executable === true &&
+            currentBinaryTypes.executables === false
+          ) {
             continue;
           }
 
-          if (sb.sharedLibrary === true && currentBinaryTypes.sharedLibraries === false) {
+          if (
+            sb.sharedLibrary === true &&
+            currentBinaryTypes.sharedLibraries === false
+          ) {
             continue;
           }
 
-          if (sb.executable === false && sb.sharedLibrary === false && currentBinaryTypes.staticLibraries === false) {
+          if (
+            sb.executable === false &&
+            sb.sharedLibrary === false &&
+            currentBinaryTypes.staticLibraries === false
+          ) {
             continue;
           }
 

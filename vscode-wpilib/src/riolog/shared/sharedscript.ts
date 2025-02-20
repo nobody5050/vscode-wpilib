@@ -1,7 +1,14 @@
 'use strict';
 
 /* tslint:disable:prefer-conditional-expression */
-import { IErrorMessage, IIPCSendMessage, IPrintMessage, MessageType, ReceiveTypes, SendTypes } from 'wpilib-riolog';
+import {
+  IErrorMessage,
+  IIPCSendMessage,
+  IPrintMessage,
+  MessageType,
+  ReceiveTypes,
+  SendTypes,
+} from 'wpilib-riolog';
 import { checkResize, scrollImpl, sendMessage } from '../script/implscript';
 
 let paused = false;
@@ -69,7 +76,7 @@ export function onShowWarnings() {
     warningsButton.innerHTML = 'Show Warnings';
   } else {
     showWarnings = true;
-    warningsButton.innerHTML = 'Don\'t Show Warnings';
+    warningsButton.innerHTML = "Don't Show Warnings";
   }
   const ul = document.getElementById('list');
   if (ul === null) {
@@ -99,7 +106,7 @@ export function onShowPrints() {
     printButton.innerHTML = 'Show Prints';
   } else {
     showPrints = true;
-    printButton.innerHTML = 'Don\'t Show Prints';
+    printButton.innerHTML = "Don't Show Prints";
   }
   const ul = document.getElementById('list');
   if (ul === null) {
@@ -143,7 +150,6 @@ export function onAutoReconnect() {
   } else {
     arButton.innerHTML = 'Disconnect';
   }
-
 }
 
 let showTimestamps = false;
@@ -157,7 +163,7 @@ export function onShowTimestamps() {
     tsButton.innerHTML = 'Show Timestamps';
   } else {
     showTimestamps = true;
-    tsButton.innerHTML = 'Don\'t Show Timestamps';
+    tsButton.innerHTML = "Don't Show Timestamps";
   }
   const ul = document.getElementById('list');
   if (ul === null) {
@@ -221,7 +227,12 @@ export function onDisconnect() {
   button.style.backgroundColor = 'Red';
 }
 
-function insertMessage(ts: number, line: string, li: HTMLLIElement, color?: string) {
+function insertMessage(
+  ts: number,
+  line: string,
+  li: HTMLLIElement,
+  color?: string
+) {
   const div = document.createElement('div');
   const tsSpan = document.createElement('span');
   tsSpan.appendChild(document.createTextNode(ts.toFixed(3) + ': '));
@@ -265,7 +276,9 @@ function insertStackTrace(st: string, li: HTMLLIElement, color?: string) {
       div.appendChild(document.createElement('br'));
     }
     first = false;
-    const tNode = document.createTextNode('\u00a0\u00a0\u00a0\u00a0 at: ' + item);
+    const tNode = document.createTextNode(
+      '\u00a0\u00a0\u00a0\u00a0 at: ' + item
+    );
     div.appendChild(tNode);
   }
   if (color !== undefined) {
@@ -333,7 +346,11 @@ export function addPrint(message: IPrintMessage) {
   ul.appendChild(li);
 }
 
-export function expandError(message: IErrorMessage, li: HTMLLIElement, color?: string) {
+export function expandError(
+  message: IErrorMessage,
+  li: HTMLLIElement,
+  color?: string
+) {
   // First append the message
   insertMessage(message.timestamp, message.details, li, color);
   // Then append location, tabbed in once
@@ -373,12 +390,24 @@ export function addError(message: IErrorMessage) {
       if (li.dataset.message === undefined) {
         return;
       }
-      const parsed = JSON.parse(li.dataset.message) as IPrintMessage | IErrorMessage;
+      const parsed = JSON.parse(li.dataset.message) as
+        | IPrintMessage
+        | IErrorMessage;
       li.innerHTML = '';
       if (li.dataset.type === 'warning') {
-        insertMessage(parsed.timestamp, (parsed as IErrorMessage).details, li, 'Yellow');
+        insertMessage(
+          parsed.timestamp,
+          (parsed as IErrorMessage).details,
+          li,
+          'Yellow'
+        );
       } else {
-        insertMessage(parsed.timestamp, (parsed as IErrorMessage).details, li, 'Red');
+        insertMessage(
+          parsed.timestamp,
+          (parsed as IErrorMessage).details,
+          li,
+          'Red'
+        );
       }
     } else {
       // expand
@@ -409,7 +438,10 @@ function handleFileSelect(evt: Event) {
   const reader = new FileReader();
   reader.onload = (loaded: Event) => {
     const target: FileReader = loaded.target as FileReader;
-    const parsed = JSON.parse(target.result as string) as (IPrintMessage | IErrorMessage)[];
+    const parsed = JSON.parse(target.result as string) as (
+      | IPrintMessage
+      | IErrorMessage
+    )[];
     for (const p of parsed) {
       addMessage(p);
     }
@@ -484,7 +516,11 @@ function createSplitUl(left: boolean): HTMLUListElement {
   return splitDiv;
 }
 
-function createButton(id: string, text: string, callback: () => void): HTMLLIElement {
+function createButton(
+  id: string,
+  text: string,
+  callback: () => void
+): HTMLLIElement {
   const li = document.createElement('li');
   const button = document.createElement('button');
   button.id = id;
@@ -529,16 +565,26 @@ function setLivePage() {
   leftList.appendChild(createButton('pause', 'Pause', onPause));
   leftList.appendChild(createButton('discard', 'Discard', onDiscard));
   leftList.appendChild(createButton('clear', 'Clear', onClear));
-  leftList.appendChild(createButton('showprints', 'Don\'t Show Prints', onShowPrints));
-  leftList.appendChild(createButton('switchPage', 'Switch to Viewer', () => {
-    setViewerPage();
-  }));
+  leftList.appendChild(
+    createButton('showprints', "Don't Show Prints", onShowPrints)
+  );
+  leftList.appendChild(
+    createButton('switchPage', 'Switch to Viewer', () => {
+      setViewerPage();
+    })
+  );
   mainDiv.appendChild(leftList);
 
   const rightList = createSplitUl(false);
-  rightList.appendChild(createButton('showwarnings', 'Don\'t Show Warnings', onShowWarnings));
-  rightList.appendChild(createButton('autoreconnect', 'Disconnect', onAutoReconnect));
-  rightList.appendChild(createButton('timestamps', 'Show Timestamps', onShowTimestamps));
+  rightList.appendChild(
+    createButton('showwarnings', "Don't Show Warnings", onShowWarnings)
+  );
+  rightList.appendChild(
+    createButton('autoreconnect', 'Disconnect', onAutoReconnect)
+  );
+  rightList.appendChild(
+    createButton('timestamps', 'Show Timestamps', onShowTimestamps)
+  );
   rightList.appendChild(createButton('savelot', 'Save Log', onSaveLog));
   const teamNumberUl = document.createElement('li');
   const teamNumberI = document.createElement('input');
@@ -589,15 +635,23 @@ export function setViewerPage() {
   fileInput.style.width = '100%';
   fileInput.addEventListener('change', handleFileSelect, false);
   leftList.appendChild(fileInput);
-  leftList.appendChild(createButton('showprints', 'Don\'t Show Prints', onShowPrints));
-  leftList.appendChild(createButton('switchPage', 'Switch to Live', () => {
-    setLivePage();
-  }));
+  leftList.appendChild(
+    createButton('showprints', "Don't Show Prints", onShowPrints)
+  );
+  leftList.appendChild(
+    createButton('switchPage', 'Switch to Live', () => {
+      setLivePage();
+    })
+  );
   mainDiv.appendChild(leftList);
 
   const rightList = createSplitUl(false);
-  rightList.appendChild(createButton('showwarnings', 'Don\'t Show Warnings', onShowWarnings));
-  rightList.appendChild(createButton('timestamps', 'Show Timestamps', onShowTimestamps));
+  rightList.appendChild(
+    createButton('showwarnings', "Don't Show Warnings", onShowWarnings)
+  );
+  rightList.appendChild(
+    createButton('timestamps', 'Show Timestamps', onShowTimestamps)
+  );
 
   mainDiv.appendChild(rightList);
 }

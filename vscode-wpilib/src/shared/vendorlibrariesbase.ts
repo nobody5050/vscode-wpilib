@@ -3,7 +3,14 @@
 import * as fetch from 'node-fetch';
 import * as path from 'path';
 import { logger } from '../logger';
-import { deleteFileAsync, existsAsync, mkdirpAsync, readdirAsync, readFileAsync, writeFileAsync } from '../utilities';
+import {
+  deleteFileAsync,
+  existsAsync,
+  mkdirp,
+  readdirAsync,
+  readFileAsync,
+  writeFileAsync,
+} from '../utilities';
 import { IUtilitiesAPI } from '../wpilibapishim';
 
 export interface IJsonDependency {
@@ -16,7 +23,7 @@ export interface IJsonDependency {
   requires: IJsonRequires[] | undefined;
 }
 
-export interface  IJsonRequires {
+export interface IJsonRequires {
   uuid: string;
   errorMessage: string;
   offlineFileName: string;
@@ -32,8 +39,12 @@ export interface IJsonConflicts {
 export function isJsonDependency(arg: unknown): arg is IJsonDependency {
   const jsonDep = arg as IJsonDependency;
 
-  return jsonDep.jsonUrl !== undefined && jsonDep.name !== undefined
-         && jsonDep.uuid !== undefined && jsonDep.version !== undefined;
+  return (
+    jsonDep.jsonUrl !== undefined &&
+    jsonDep.name !== undefined &&
+    jsonDep.uuid !== undefined &&
+    jsonDep.version !== undefined
+  );
 }
 
 export class VendorLibrariesBase {
@@ -55,13 +66,20 @@ export class VendorLibrariesBase {
     return path.join(root, 'vendordeps');
   }
 
-  public async installDependency(dep: IJsonDependency, url: string, override: boolean): Promise<boolean> {
+  public async installDependency(
+    dep: IJsonDependency,
+    url: string,
+    override: boolean
+  ): Promise<boolean> {
     const dirExists = await existsAsync(url);
 
     if (!dirExists) {
-      await mkdirpAsync(url);
+      await mkdirp(url);
       // Directly write file
-      await writeFileAsync(path.join(url, dep.fileName), JSON.stringify(dep, null, 4));
+      await writeFileAsync(
+        path.join(url, dep.fileName),
+        JSON.stringify(dep, null, 4)
+      );
       return true;
     }
 
@@ -82,12 +100,17 @@ export class VendorLibrariesBase {
       }
     }
 
-    await writeFileAsync(path.join(url, dep.fileName), JSON.stringify(dep, null, 4));
+    await writeFileAsync(
+      path.join(url, dep.fileName),
+      JSON.stringify(dep, null, 4)
+    );
     return true;
   }
 
   public getHomeDirDeps(): Promise<IJsonDependency[]> {
-    return this.getDependencies(path.join(this.utilities.getWPILibHomeDir(), 'vendordeps'));
+    return this.getDependencies(
+      path.join(this.utilities.getWPILibHomeDir(), 'vendordeps')
+    );
   }
 
   protected async readFile(file: string): Promise<IJsonDependency | undefined> {

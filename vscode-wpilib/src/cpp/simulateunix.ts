@@ -14,18 +14,27 @@ export interface IUnixSimulateCommands {
   srcPaths: Set<string>;
 }
 
-export async function startUnixSimulation(commands: IUnixSimulateCommands): Promise<void> {
+export async function startUnixSimulation(
+  commands: IUnixSimulateCommands
+): Promise<void> {
   const config: vscode.DebugConfiguration = {
     MIMode: commands.clang ? 'lldb' : 'gdb',
     additionalSOLibSearchPath: commands.soLibPath,
     cwd: commands.workspace.uri.fsPath,
-    environment: [{
-      name: 'HALSIM_EXTENSIONS', value: commands.extensions,
-    }, {
-      name: 'LD_LIBRARY_PATH', value: commands.ldPath,
-    }, {
-      name: 'DYLD_FALLBACK_LIBRARY_PATH', value: commands.ldPath,
-    }],
+    environment: [
+      {
+        name: 'HALSIM_EXTENSIONS',
+        value: commands.extensions,
+      },
+      {
+        name: 'LD_LIBRARY_PATH',
+        value: commands.ldPath,
+      },
+      {
+        name: 'DYLD_FALLBACK_LIBRARY_PATH',
+        value: commands.ldPath,
+      },
+    ],
     console: 'integratedTerminal',
     name: 'WPILib C++ Simulate',
     program: commands.executablePath,

@@ -12,7 +12,12 @@ export enum SendTypes {
 
 export interface IIPCSendMessage {
   type: SendTypes;
-  message: IPrintMessage | IErrorMessage | (IPrintMessage | IErrorMessage)[] | boolean | number;
+  message:
+    | IPrintMessage
+    | IErrorMessage
+    | (IPrintMessage | IErrorMessage)[]
+    | boolean
+    | number;
 }
 
 export enum ReceiveTypes {
@@ -41,12 +46,18 @@ export interface IWindowView extends EventEmitter, IDisposable {
   handleSave(saveData: (IPrintMessage | IErrorMessage)[]): Promise<boolean>;
 
   addListener(event: string, listener: (...args: unknown[]) => void): this;
-  addListener(event: 'didReceiveMessage', listener: (message: IIPCReceiveMessage) => void): this;
+  addListener(
+    event: 'didReceiveMessage',
+    listener: (message: IIPCReceiveMessage) => void
+  ): this;
   addListener(event: 'didDispose', listener: () => void): this;
   addListener(event: 'windowActive', listener: () => void): this;
 
   on(event: string, listener: (...args: unknown[]) => void): this;
-  on(event: 'didReceiveMessage', listener: (message: IIPCReceiveMessage) => void): this;
+  on(
+    event: 'didReceiveMessage',
+    listener: (message: IIPCReceiveMessage) => void
+  ): this;
   on(event: 'didDispose', listener: () => void): this;
   on(event: 'windowActive', listener: () => void): this;
 
@@ -66,11 +77,20 @@ export interface IRioConsole extends EventEmitter, IDisposable {
   setTeamNumber(teamNumber: number): void;
 
   addListener(event: string, listener: (...args: unknown[]) => void): this;
-  addListener(event: 'message', listener: (message: IIPCSendMessage) => void): this;
-  addListener(event: 'connectionChanged', listener: (connected: boolean) => void): this;
+  addListener(
+    event: 'message',
+    listener: (message: IIPCSendMessage) => void
+  ): this;
+  addListener(
+    event: 'connectionChanged',
+    listener: (connected: boolean) => void
+  ): this;
 
   on(event: string, listener: (...args: unknown[]) => void): this;
-  on(event: 'message', listener: (message: IPrintMessage | IErrorMessage) => void): this;
+  on(
+    event: 'message',
+    listener: (message: IPrintMessage | IErrorMessage) => void
+  ): this;
   on(event: 'connectionChanged', listener: (connected: boolean) => void): this;
 
   emit(event: string | symbol, ...args: unknown[]): boolean;

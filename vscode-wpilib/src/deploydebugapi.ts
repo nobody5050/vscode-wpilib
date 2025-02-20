@@ -5,25 +5,35 @@ import { RioLogWindow } from 'wpilib-riolog';
 import { localize as i18n } from './locale';
 import { logger } from './logger';
 import { PreferencesAPI } from './preferencesapi';
-import { LiveRioConsoleProvider, RioLogWebviewProvider } from './riolog/vscodeimpl';
+import {
+  LiveRioConsoleProvider,
+  RioLogWebviewProvider,
+} from './riolog/vscodeimpl';
 
 interface ICodeDeployerQuickPick extends vscode.QuickPickItem {
   deployer: ICodeDeployer;
 }
 
-class WPILibDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
+class WPILibDebugConfigurationProvider
+  implements vscode.DebugConfigurationProvider
+{
   private disposables: vscode.Disposable[] = [];
   private deployDebugAPI: IDeployDebugAPI;
 
   constructor(ddApi: IDeployDebugAPI) {
     this.deployDebugAPI = ddApi;
-    const regProv = vscode.debug.registerDebugConfigurationProvider('wpilib', this);
+    const regProv = vscode.debug.registerDebugConfigurationProvider(
+      'wpilib',
+      this
+    );
     this.disposables.push(regProv);
   }
 
-  public resolveDebugConfiguration(workspace: vscode.WorkspaceFolder | undefined,
-                                   config: vscode.DebugConfiguration, __?: vscode.CancellationToken):
-    vscode.ProviderResult<vscode.DebugConfiguration> {
+  public resolveDebugConfiguration(
+    workspace: vscode.WorkspaceFolder | undefined,
+    config: vscode.DebugConfiguration,
+    __?: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.DebugConfiguration> {
     if (workspace === undefined) {
       return undefined;
     }
@@ -43,7 +53,11 @@ class WPILibDebugConfigurationProvider implements vscode.DebugConfigurationProvi
     return new Promise<undefined>(async (resolve) => {
       if (desktop) {
         if (hwsim) {
-          await this.deployDebugAPI.simulateCode(workspace, undefined, '-PhwSim');
+          await this.deployDebugAPI.simulateCode(
+            workspace,
+            undefined,
+            '-PhwSim'
+          );
         } else {
           await this.deployDebugAPI.simulateCode(workspace, undefined);
         }
@@ -54,8 +68,10 @@ class WPILibDebugConfigurationProvider implements vscode.DebugConfigurationProvi
     });
   }
 
-  public provideDebugConfigurations(_workspace: vscode.WorkspaceFolder | undefined,
-                                    __?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration[]> {
+  public provideDebugConfigurations(
+    _workspace: vscode.WorkspaceFolder | undefined,
+    __?: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.DebugConfiguration[]> {
     const configurationDeploy: vscode.DebugConfiguration = {
       desktop: false,
       name: 'WPILib roboRIO Debug',
@@ -79,10 +95,17 @@ class WPILibDebugConfigurationProvider implements vscode.DebugConfigurationProvi
 }
 
 export class DeployDebugAPI implements IDeployDebugAPI {
-  public static async Create(resourceFolder: string, preferences: PreferencesAPI): Promise<DeployDebugAPI> {
+  public static async Create(
+    resourceFolder: string,
+    preferences: PreferencesAPI
+  ): Promise<DeployDebugAPI> {
     const dda = new DeployDebugAPI(preferences);
-    dda.rioLogWebViewProvider = await RioLogWebviewProvider.Create(resourceFolder);
-    dda.liveWindow = new RioLogWindow(dda.rioLogWebViewProvider, dda.rioLogConsoleProvider);
+    dda.rioLogWebViewProvider =
+      await RioLogWebviewProvider.Create(resourceFolder);
+    dda.liveWindow = new RioLogWindow(
+      dda.rioLogWebViewProvider,
+      dda.rioLogConsoleProvider
+    );
     dda.disposables.push(dda.liveWindow);
     return dda;
   }
@@ -103,7 +126,9 @@ export class DeployDebugAPI implements IDeployDebugAPI {
 
     this.rioLogConsoleProvider = new LiveRioConsoleProvider();
 
-    this.debugConfigurationProvider = new WPILibDebugConfigurationProvider(this);
+    this.debugConfigurationProvider = new WPILibDebugConfigurationProvider(
+      this
+    );
     this.disposables.push(this.debugConfigurationProvider);
   }
 
@@ -119,7 +144,6 @@ export class DeployDebugAPI implements IDeployDebugAPI {
       deployer,
       description: deployer.getDescription(),
       label: deployer.getDisplayName(),
-
     };
     this.deployers.push(qpi);
   }
@@ -146,16 +170,49 @@ export class DeployDebugAPI implements IDeployDebugAPI {
     this.languageChoices.push(language);
   }
 
-  public debugCode(workspace: vscode.WorkspaceFolder, source: vscode.Uri | undefined, ...args: string[]): Promise<boolean> {
-    return this.deployCommon(workspace, this.debuggers, true, false, source, args);
+  public debugCode(
+    workspace: vscode.WorkspaceFolder,
+    source: vscode.Uri | undefined,
+    ...args: string[]
+  ): Promise<boolean> {
+    return this.deployCommon(
+      workspace,
+      this.debuggers,
+      true,
+      false,
+      source,
+      args
+    );
   }
 
-  public deployCode(workspace: vscode.WorkspaceFolder, source: vscode.Uri | undefined, ...args: string[]): Promise<boolean> {
-    return this.deployCommon(workspace, this.deployers, false, false, source, args);
+  public deployCode(
+    workspace: vscode.WorkspaceFolder,
+    source: vscode.Uri | undefined,
+    ...args: string[]
+  ): Promise<boolean> {
+    return this.deployCommon(
+      workspace,
+      this.deployers,
+      false,
+      false,
+      source,
+      args
+    );
   }
 
-  public simulateCode(workspace: vscode.WorkspaceFolder, source: vscode.Uri | undefined, ...args: string[]): Promise<boolean> {
-    return this.deployCommon(workspace, this.simulators, true, true, source, args);
+  public simulateCode(
+    workspace: vscode.WorkspaceFolder,
+    source: vscode.Uri | undefined,
+    ...args: string[]
+  ): Promise<boolean> {
+    return this.deployCommon(
+      workspace,
+      this.simulators,
+      true,
+      true,
+      source,
+      args
+    );
   }
 
   public getLanguageChoices(): string[] {
@@ -168,10 +225,18 @@ export class DeployDebugAPI implements IDeployDebugAPI {
     }
   }
 
-  private async deployCommon(workspace: vscode.WorkspaceFolder, deployer: ICodeDeployerQuickPick[],
-                             debug: boolean, desktop: boolean, source: vscode.Uri | undefined, args: string[]): Promise<boolean> {
+  private async deployCommon(
+    workspace: vscode.WorkspaceFolder,
+    deployer: ICodeDeployerQuickPick[],
+    debug: boolean,
+    desktop: boolean,
+    source: vscode.Uri | undefined,
+    args: string[]
+  ): Promise<boolean> {
     if (deployer.length <= 0) {
-      vscode.window.showInformationMessage(i18n('message', 'No registered deployers'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No registered deployers')
+      );
       return false;
     }
 
@@ -187,14 +252,20 @@ export class DeployDebugAPI implements IDeployDebugAPI {
     let langSelection: ICodeDeployerQuickPick;
 
     if (validDeployers.length <= 0) {
-      vscode.window.showInformationMessage(i18n('message', 'No available deployers'));
+      vscode.window.showInformationMessage(
+        i18n('message', 'No available deployers')
+      );
       return false;
     } else if (validDeployers.length === 1) {
       langSelection = validDeployers[0];
     } else {
-      const selection = await vscode.window.showQuickPick(validDeployers, { placeHolder: i18n('ui', 'Pick a language') });
+      const selection = await vscode.window.showQuickPick(validDeployers, {
+        placeHolder: i18n('ui', 'Pick a language'),
+      });
       if (selection === undefined) {
-        vscode.window.showInformationMessage(i18n('message', 'Selection exited. Cancelling'));
+        vscode.window.showInformationMessage(
+          i18n('message', 'Selection exited. Cancelling')
+        );
         return false;
       }
       langSelection = selection;
@@ -205,13 +276,23 @@ export class DeployDebugAPI implements IDeployDebugAPI {
     }
     const teamNumber = await preferences.getTeamNumber();
     try {
-      const deploySuccess = await langSelection.deployer.runDeployer(teamNumber, workspace, source, ...args);
+      const deploySuccess = await langSelection.deployer.runDeployer(
+        teamNumber,
+        workspace,
+        source,
+        ...args
+      );
       if (preferences.getAutoStartRioLog() && deploySuccess && !desktop) {
         await this.startRioLog(teamNumber, !debug);
       }
       return true;
     } catch (err) {
-      vscode.window.showErrorMessage(i18n('message', 'Unknown error occurred. See output window or console log for more information.'));
+      vscode.window.showErrorMessage(
+        i18n(
+          'message',
+          'Unknown error occurred. See output window or console log for more information.'
+        )
+      );
       logger.error('Debug error', err);
       return false;
     }
