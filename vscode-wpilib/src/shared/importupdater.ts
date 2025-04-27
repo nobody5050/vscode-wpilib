@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
-import * as glob from 'glob';
+import glob from 'glob';
 import * as path from 'path';
 import { readFileAsync } from '../utilities';
 

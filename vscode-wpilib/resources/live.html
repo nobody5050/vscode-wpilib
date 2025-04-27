@@ -3,6 +3,32 @@
 
 <head>
   <title>WPILib RioLog</title>
+  <!-- Add polyfill for net module before anything else loads -->
+  <script>
+    // Define a fake 'net' module that the code can import
+    window.require = function(moduleName) {
+      if (moduleName === 'net') {
+        // Return our fake net module implementation
+        return {
+          Socket: function() {
+            // Create a fake Socket class that does nothing but satisfies the API
+            this.on = function() { return this; };
+            this.emit = function() { return false; };
+            this.removeAllListeners = function() { return this; };
+            this.connect = function(port, host, callback) { 
+              if (callback) setTimeout(callback, 0); 
+              return this; 
+            };
+            this.end = function() { return this; };
+            this.destroy = function() { return this; };
+            this.setNoDelay = function() { return this; };
+            this.setKeepAlive = function() { return this; };
+          }
+        };
+      }
+      return window[moduleName] || {};
+    };
+  </script>
 </head>
 
 <body>

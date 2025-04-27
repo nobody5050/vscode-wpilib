@@ -45,7 +45,7 @@ import { Gradle2020Import } from './webviews/gradle2020import';
 import { Help } from './webviews/help';
 import { ProjectCreator } from './webviews/projectcreator';
 import { WPILibUpdates } from './wpilibupdates';
-import { DependencyViewProvider } from './dependencyView';
+import { DependencyViewProvider } from './dependencyview/dependencyView';
 
 // External API class to implement the IExternalAPI interface
 class ExternalAPI implements IExternalAPI {
@@ -245,10 +245,6 @@ async function handleAfterTrusted(
 
       context.subscriptions.push(depProvider);
     }
-  } catch (err) {
-    logger.error('error creating dependency view', err);
-    creationError = true;
-  }
 
   // Create all of our commands that the extension runs
   createVsCommands(context, externalApi);

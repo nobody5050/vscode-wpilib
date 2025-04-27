@@ -5,7 +5,7 @@
   "tasks": [
     {
       "type": "npm",
-      "identifier": "vscode-web-watch",
+      "label": "vscode-web-watch",
       "script": "webpack-watch",
       "path": "vscode-wpilib/",
       "isBackground": true,
@@ -20,7 +20,7 @@
     },
     {
       "type": "npm",
-      "identifier": "standalone-watch",
+      "label": "standalone-watch",
       "script": "watch",
       "problemMatcher": "$tsc-watch",
       "path": "wpilib-utility-standalone/",
