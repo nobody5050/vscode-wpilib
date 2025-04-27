@@ -13,7 +13,6 @@ const vscode = acquireVsCodeApi();
 
 // Wizard state
 let currentStep = 1;
-let totalSteps = 3;
 
 function navigateToStep(step: number) {
   // Hide all steps

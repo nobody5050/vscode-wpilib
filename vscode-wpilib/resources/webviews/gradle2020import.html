@@ -26,20 +26,20 @@
         <h2>Step 1: Select Source Project</h2>
         <p>Select the build.gradle file of your 2020-2024 WPILib project that you want to import.</p>
       </div>
-      
+
       <div class="project-row">
         <div class="project-label"><b>Gradle Project</b></div>
         <span>Select the build.gradle file of the gradle project to import.</span>
       </div>
-      
+
       <div class="project-row">
         <input id="gradle2020Input" type="text" class="project-input" readonly />
       </div>
-      
+
       <div class="project-row">
         <button id="gradle2020SelectButton" class="project-button">Select Source Project</button>
       </div>
-      
+
       <div class="wizard-navigation">
         <div></div> <!-- Empty div for alignment -->
         <button id="next-to-step-2" class="project-button next-button" disabled>Next</button>
@@ -52,20 +52,20 @@
         <h2>Step 2: Configure Project</h2>
         <p>Configure the new project's location and settings.</p>
       </div>
-      
+
       <div class="project-row">
         <div id="projectfolderdiv" class="project-label"><b>Base Folder</b></div>
         <span>Select a base folder to place the new project into.</span>
       </div>
-      
+
       <div class="project-row">
         <input id="projectFolder" type="text" class="project-input" readonly />
       </div>
-      
+
       <div class="project-row">
         <button id="projectSelectButton" class="project-button">Select Destination Folder</button>
       </div>
-      
+
       <div class="project-row">
         <div class="project-label"><b>Project Name</b></div>
         <div class="project-field-container">
@@ -81,7 +81,7 @@
           <div id="teamNumberError" class="project-error-text">Team number must be between 1 and 9999</div>
         </div>
       </div>
-      
+
       <div class="project-row project-checkboxes">
         <div class="project-checkbox-container">
           <input id="newFolderCB" type="checkbox" class="project-checkbox" checked />
@@ -89,7 +89,29 @@
           <span class="checkbox-help">Creates a new folder at Base Folder/Project Name</span>
         </div>
       </div>
-      
+
+      <div class="project-row project-checkboxes">
+        <div class="project-checkbox-container">
+          <input id="desktopCB" type="checkbox" class="project-checkbox" />
+          <label for="desktopCB">Enable Desktop Support</label>
+          <span class="checkbox-help">Enables desktop simulation and unit testing</span>
+        </div>
+      </div>
+
+      <div class="project-row">
+        <h3>Hardware Option</h3>
+        <p>Select a hardware option if applicable:</p>
+        <div class="project-checkbox-container">
+          <input id="romiCB" type="checkbox" class="project-checkbox" />
+          <label for="romiCB">Romi</label>
+        </div>
+        <div class="project-checkbox-container">
+          <input id="xrpCB" type="checkbox" class="project-checkbox" />
+          <label for="xrpCB">XRP</label>
+        </div>
+        <div id="xrpRomiError" class="project-error-text">You cannot select both Romi and XRP</div>
+      </div>
+
       <div class="wizard-navigation">
         <button id="back-to-step-1" class="project-button back-button">Back</button>
         <button id="next-to-step-3" class="project-button next-button">Next</button>
@@ -116,36 +138,18 @@
           </div>
         </div>
       </div>
-      
-      <div class="project-row project-checkboxes">
-        <div class="project-checkbox-container">
-          <input id="desktopCB" type="checkbox" class="project-checkbox" />
-          <label for="desktopCB">Enable Desktop Support</label>
-          <span class="checkbox-help">Enables desktop simulation and unit testing</span>
+
+      <div class="project-row">
+        <div class="import-note">
+          <p><strong>Note:</strong> The import process copies your project source files to a new directory and
+            completely regenerates the gradle files. If you made non-standard updates to the build.gradle, you'll need
+            to make those changes again. Vendor libraries must also be imported again.</p>
+          <p>For more details, see <a
+              href="https://docs.wpilib.org/en/stable/docs/software/wpilib-overview/importing-gradle-project.html">Importing
+              a Gradle Project</a> on frc-docs.</p>
         </div>
       </div>
 
-      <div class="project-row">
-        <h3>Hardware Option</h3>
-        <p>Select a hardware option if applicable:</p>
-        <div class="project-checkbox-container">
-          <input id="romiCB" type="checkbox" class="project-checkbox" />
-          <label for="romiCB">Romi</label>
-        </div>
-        <div class="project-checkbox-container">
-          <input id="xrpCB" type="checkbox" class="project-checkbox" />
-          <label for="xrpCB">XRP</label>
-        </div>
-        <div id="xrpRomiError" class="project-error-text">You cannot select both Romi and XRP</div>
-      </div>
-      
-      <div class="project-row">
-        <div class="import-note">
-          <p><strong>Note:</strong> The import process copies your project source files to a new directory and completely regenerates the gradle files. If you made non-standard updates to the build.gradle, you'll need to make those changes again. Vendor libraries must also be imported again.</p>
-          <p>For more details, see <a href="https://docs.wpilib.org/en/stable/docs/software/wpilib-overview/importing-gradle-project.html">Importing a Gradle Project</a> on frc-docs.</p>
-        </div>
-      </div>
-      
       <div class="wizard-navigation">
         <button id="back-to-step-2" class="project-button back-button">Back</button>
         <button id="importProject" class="project-button primary-button">Import Project</button>

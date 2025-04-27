@@ -46,6 +46,19 @@ function navigateToStep(step: number) {
   
   currentStep = step;
   
+  // If navigating to step 2, ensure dropdowns reflect the current project type
+  if (step === 2) {
+    // Reset language dropdown to default state if needed
+    const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
+    if (languageSelect.selectedIndex !== 0) {
+      languageSelect.selectedIndex = 0;
+      language = '';
+    }
+    
+    // Reset base dropdown
+    resetBaseDropdown();
+  }
+  
   // Update summary when navigating to the final step
   if (step === 4) {
     updateSummary();
@@ -116,6 +129,28 @@ function validateStep3(): boolean {
 
 function validateStep4(): boolean {
   return validateTeamNumber();
+}
+
+function resetBaseDropdown() {
+  const baseSelect = document.getElementById('base-select') as HTMLSelectElement;
+  
+  // Clear all options except the first default option
+  while (baseSelect.options.length > 1) {
+    baseSelect.remove(1);
+  }
+  
+  // Reset to default option and disable
+  baseSelect.selectedIndex = 0;
+  baseSelect.disabled = true;
+  
+  // Reset the base variable
+  base = '';
+  
+  // Disable next button
+  const nextButton = document.getElementById('next-to-step-3');
+  if (nextButton) {
+    (nextButton as HTMLButtonElement).disabled = true;
+  }
 }
 
 function selectProjectType(type: ProjectType) {
@@ -259,6 +294,9 @@ function setupEventListeners() {
   const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
   languageSelect.addEventListener('change', () => {
     language = languageSelect.value;
+    
+    // Reset base dropdown when language changes
+    resetBaseDropdown();
     
     // Request project bases for this language
     vscode.postMessage({

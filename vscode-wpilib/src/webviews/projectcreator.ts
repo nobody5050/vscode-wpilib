@@ -120,9 +120,9 @@ export class ProjectCreator extends WebViewBase {
     // Get bases for the selected language and project type
     const bases = this.exampleTemplateApi.getBases(data.projectType === ProjectType.Template, data.language);
     
-    // Return the list of bases to the UI
+    // Return the complete base objects to the UI
     await this.postMessage({
-      data: bases.map(base => base.label),
+      data: bases,
       type: 'base',
     });
   }
