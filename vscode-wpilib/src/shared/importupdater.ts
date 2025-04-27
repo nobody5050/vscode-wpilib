@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
-import * as glob from 'glob';
+const glob = require('glob');
 import * as path from 'path';
 import { readFileAsync } from '../utilities';
 
@@ -28,7 +28,7 @@ export async function ImportUpdate(srcDir: string, updateFile: string): Promise<
         cwd: srcDir,
         nodir: true,
         nomount: true,
-      }, (err, matches) => {
+      }, (err: Error | null, matches: string[]) => {
         if (err) {
           reject(err);
         } else {

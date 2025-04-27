@@ -1,4 +1,4 @@
-'use scrict';
+'use strict';
 import * as vscode from 'vscode';
 import { ICodeDeployer, IDeployDebugAPI } from 'vscode-wpilibapi';
 import { RioLogWindow } from 'wpilib-riolog';

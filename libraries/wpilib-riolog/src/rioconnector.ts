@@ -17,7 +17,7 @@ async function properRace<T>(promises: Promise<T>[]): Promise<T> {
   } catch (index) {
     // The promise has rejected, remove it from the list of promises and just continue the race.
     console.log('reject promise');
-    const p = promises.splice(index, 1)[0];
+    const p = promises.splice(index as number, 1)[0];
     p.catch((e) => console.log('A promise has been rejected, but awaiting others', e));
     return properRace(promises);
   }

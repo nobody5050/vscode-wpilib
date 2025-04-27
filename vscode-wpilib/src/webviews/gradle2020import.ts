@@ -285,7 +285,9 @@ export class Gradle2020Import extends WebViewBase {
   }
 
   private async asyncInitialize() {
-    await this.loadWebpage(path.join(extensionContext.extensionPath, 'resources', 'webviews', 'gradle2020import.html'),
-      path.join(extensionContext.extensionPath, 'resources', 'dist', 'gradle2020importpage.js'));
+    const htmlPath = path.join(extensionContext.extensionPath, 'resources', 'webviews', 'gradle2020import.html');
+    const scriptPath = path.join(extensionContext.extensionPath, 'resources', 'dist', 'gradle2020importpage.js');
+    
+    await this.loadWebpage(htmlPath, scriptPath);
   }
 }

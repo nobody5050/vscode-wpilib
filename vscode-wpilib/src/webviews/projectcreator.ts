@@ -9,6 +9,7 @@ import { extensionContext, promptForProjectOpen } from '../utilities';
 import { IProjectIPCData, IProjectIPCReceive, IProjectIPCSend, ProjectType } from './pages/projectcreatorpagetypes';
 import { WebViewBase } from './webviewbase';
 import { Uri } from '../vscodeshim';
+import { WebviewProvider } from '../webviewprovider';
 
 export class ProjectCreator extends WebViewBase {
   public static async Create(exampleTemplateApi: IExampleTemplateAPI, resourceRoot: string): Promise<ProjectCreator> {
@@ -94,43 +95,36 @@ export class ProjectCreator extends WebViewBase {
   }
 
   private async handleProjectType() {
-    const items = [];
-    items.push({label: i18n('projectcreator', 'Template'), value: ProjectType.Template});
-    items.push({label: i18n('projectcreator', 'Example'), value: ProjectType.Example});
-    const result = await vscode.window.showQuickPick(items, {
-      placeHolder: i18n('projectcreator', 'Select a project type'),
+    // Instead of showing a QuickPick, return the list of languages directly to the UI
+    const templateLanguages = this.exampleTemplateApi.getLanguages(true);
+    const exampleLanguages = this.exampleTemplateApi.getLanguages(false);
+    
+    await this.postMessage({
+      data: templateLanguages,
+      type: 'language',
     });
-    if (result) {
-      await this.postMessage({
-        data: result.value,
-        type: 'projecttype',
-      });
-    }
   }
 
   private async handleLanguage(data: IProjectIPCData) {
-    const languages: string[] = this.exampleTemplateApi.getLanguages(data.projectType === ProjectType.Template);
-    const result = await vscode.window.showQuickPick(languages, {
-      placeHolder: i18n('projectcreator', 'Select a language'),
+    // Get languages for the selected project type
+    const languages = this.exampleTemplateApi.getLanguages(data.projectType === ProjectType.Template);
+    
+    // Return the list of languages to the UI
+    await this.postMessage({
+      data: languages,
+      type: 'language',
     });
-    if (result) {
-      await this.postMessage({
-        data: result,
-        type: 'language',
-      });
-    }
   }
 
   private async handleBase(data: IProjectIPCData) {
-    const result = await vscode.window.showQuickPick(this.exampleTemplateApi.getBases(data.projectType === ProjectType.Template, data.language), {
-      placeHolder: i18n('projectcreator', 'Select a project base'),
+    // Get bases for the selected language and project type
+    const bases = this.exampleTemplateApi.getBases(data.projectType === ProjectType.Template, data.language);
+    
+    // Return the complete base objects to the UI
+    await this.postMessage({
+      data: bases,
+      type: 'base',
     });
-    if (result) {
-      await this.postMessage({
-        data: result.label,
-        type: 'base',
-      });
-    }
   }
 
   private async handleNewProjectLoc(data: IProjectIPCData) {
@@ -156,8 +150,35 @@ export class ProjectCreator extends WebViewBase {
   }
 
   private async asyncInitialize() {
-    await this.loadWebpage(path.join(extensionContext.extensionPath, 'resources', 'webviews', 'projectcreator.html'),
-      path.join(extensionContext.extensionPath, 'resources', 'dist', 'projectcreatorpage.js'),
-      ['projectcreator']);
+    const htmlPath = path.join(extensionContext.extensionPath, 'resources', 'webviews', 'projectcreator.html');
+    const scriptPath = path.join(extensionContext.extensionPath, 'resources', 'dist', 'projectcreatorpage.js');
+    
+    // Include the 'projectcreator' domain for localization
+    await this.loadWebpage(htmlPath, scriptPath, ['projectcreator']);
   }
+}
+
+async function createProjectUI(extensionResourceLocation: string): Promise<vscode.WebviewPanel> {
+  const panel = vscode.window.createWebviewPanel(
+    'wpilibprojectcreator',
+    i18n('title', 'New Project Creator'),
+    vscode.ViewColumn.One,
+    {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots: [
+        vscode.Uri.file(extensionResourceLocation),
+        vscode.Uri.file(path.join(extensionResourceLocation, 'media')),
+      ],
+    }
+  );
+
+  // Use WebviewProvider to load HTML with proper styling
+  panel.webview.html = await WebviewProvider.getWebviewContent(
+    vscode.Uri.file(extensionResourceLocation),
+    'resources/webviews/projectcreator.html',
+    panel.webview
+  );
+  
+  return panel;
 }
