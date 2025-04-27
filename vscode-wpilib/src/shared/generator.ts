@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import glob from 'glob';
+const glob = require('glob');
 import * as path from 'path';
 import { localize as i18n } from '../locale';
 import { logger } from '../logger';
@@ -151,7 +151,7 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
         cwd: codePath,
         nodir: true,
         nomount: true,
-      }, (err, matches) => {
+      },  (err: Error | null, matches: string[]) => {
         if (err) {
           reject(err);
         } else {
@@ -205,7 +205,7 @@ export async function generateCopyJava(resourcesFolder: string, fromTemplateFold
           cwd: testPath,
           nodir: true,
           nomount: true,
-        }, (err, matches) => {
+        },  (err: Error | null, matches: string[]) => {
           if (err) {
             reject(err);
           } else {
