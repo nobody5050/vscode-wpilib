@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { IPreferences } from 'vscode-wpilibapi';
 import { localize as i18n } from './locale';
-import { IPreferencesJson } from './shared/preferencesjson';
+import { IPreferencesJson } from './utils/project/preferencesjson';
 import { existsAsync, mkdirAsync, readFileAsync, writeFileAsync } from './utilities';
 
 const defaultPreferences: IPreferencesJson = {

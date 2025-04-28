@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { logger } from './logger';
 import { IExternalAPI } from 'vscode-wpilibapi';
 import { localize as i18n } from './locale';
-import { IJsonDependency, VendorLibrariesBase } from './shared/vendorlibrariesbase';
+import { IJsonDependency, VendorLibrariesBase } from './utils/project/vendorlibrariesbase';
 import { deleteFileAsync, readdirAsync } from './utilities';
 import { isNewerVersion } from './versions';
 

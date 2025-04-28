@@ -29,9 +29,9 @@ import { PersistentFolderState } from './persistentState';
 import { Preferences } from './preferences';
 import { PreferencesAPI } from './preferencesapi';
 import { ProjectInfoGatherer } from './projectinfo';
-import { ExampleTemplateAPI } from './shared/exampletemplateapi';
-import { UtilitiesAPI } from './shared/utilitiesapi';
-import { addVendorExamples } from './shared/vendorexamples';
+import { ExampleTemplateAPI } from './utils/project/exampletemplateapi';
+import { UtilitiesAPI } from './utils/project/utilitiesapi';
+import { addVendorExamples } from './utils/project/vendorexamples';
 import { ToolAPI } from './toolapi';
 import {
   existsAsync,

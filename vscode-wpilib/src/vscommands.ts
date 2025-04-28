@@ -7,7 +7,7 @@ import { downloadDocs } from './docsapi';
 import { localize as i18n } from './locale';
 import { logger } from './logger';
 import { requestTeamNumber } from './preferences';
-import { setDesktopEnabled } from './shared/generator';
+import { setDesktopEnabled } from './utils/project/generator';
 import { ToolAPI } from './toolapi';
 import { existsAsync, getDesktopEnabled, gradleRun, javaHome } from './utilities';
 import { WPILibUpdates } from './wpilibupdates';

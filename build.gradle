@@ -85,43 +85,15 @@ def downloadXRPVendordep = tasks.register('downloadXRPVendordep', Download) {
   overwrite true
 }
 
-task copyFromVsCodeToStandaloneResources(type: Copy) {
-    dependsOn extractCppDependencies
-    dependsOn extractJavaDependencies
-    dependsOn downloadNewCommands
-    dependsOn downloadRomiVendordep
-    dependsOn downloadXRPVendordep
-    from ('vscode-wpilib/resources/java') {
-        into 'java'
-    }
-    from ('vscode-wpilib/resources/cpp') {
-        into 'cpp'
-    }
-    from ('vscode-wpilib/resources/gradle') {
-        into 'gradle'
-    }
-    from ('vscode-wpilib/resources/vendordeps') {
-        into 'vendordeps'
-    }
-    into 'wpilib-utility-standalone/resources'
 }
 
-task copyFromVsCodeToStandaloneSrc(type: Copy) {
-    from ('vscode-wpilib/src/riolog/shared') {
-        into 'riolog/shared'
-    }
-    from ('vscode-wpilib/src/shared') {
-        into 'shared'
-    }
-    into 'wpilib-utility-standalone/src'
 }
 
 apply from: 'templatebuilder.gradle'
 
 
 task updateAllDependencies() {
-    dependsOn copyFromVsCodeToStandaloneResources
-    dependsOn copyFromVsCodeToStandaloneSrc
+    // No dependencies required
 }
 
 if (project.hasProperty("publishVersion")) {

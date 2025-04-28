@@ -23,7 +23,6 @@
       "label": "standalone-watch",
       "script": "watch",
       "problemMatcher": "$tsc-watch",
-      "path": "wpilib-utility-standalone/",
       "isBackground": true,
       "presentation": {
         "reveal": "never"
