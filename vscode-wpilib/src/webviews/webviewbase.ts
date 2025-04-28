@@ -35,11 +35,11 @@ export abstract class WebViewBase {
     }
 
     // Add CSS link if it's not already there
-    const cssPath = path.join(extensionContext.extensionPath, 'media', 'main.css');
-    const cssHrefCheck = 'href="replaceresource/media/main.css"';
+    const cssPath = path.join(extensionContext.extensionPath, 'resources', 'media', 'main.css');
+    const cssHrefCheck = 'href="replaceresource/resources/media/main.css"';
     if (!this.html.includes(cssHrefCheck) && !this.html.includes('main.css')) {
       this.html = this.html.replace('</head>', 
-        `<link rel="stylesheet" href="replaceresource/media/main.css" />\r\n</head>`);
+        `<link rel="stylesheet" href="replaceresource/resources/media/main.css" />\r\n</head>`);
     }
 
     if (localeDomains) {
@@ -60,7 +60,7 @@ export abstract class WebViewBase {
   private replaceResources(webview: vscode.Webview) {
     // Add CSS for main.css
     const cssUri = webview.asWebviewUri(
-      vscode.Uri.file(path.join(extensionContext.extensionPath, 'media', 'main.css'))
+      vscode.Uri.file(path.join(extensionContext.extensionPath, 'resources', 'media', 'main.css'))
     );
     
     // Update the CSS path with the webview URI
@@ -89,7 +89,7 @@ export abstract class WebViewBase {
         ...(options || {}),
         localResourceRoots: [
           vscode.Uri.file(extensionContext.extensionPath),
-          vscode.Uri.file(path.join(extensionContext.extensionPath, 'media')),
+          vscode.Uri.file(path.join(extensionContext.extensionPath, 'resources', 'media')),
         ]
       });
       this.webview.iconPath = vscode.Uri.file(path.join(this.resourceRoot, 'wpilib-icon-128.png'));

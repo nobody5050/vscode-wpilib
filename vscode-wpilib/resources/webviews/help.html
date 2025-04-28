@@ -15,16 +15,19 @@
     <h1 class="project-title">WPILib Help</h1>
 
     <div class="project-row">
-      <p>Welcome to WPILib Help! To open this window again, open the Command Palette (F1 or View->Command Palette), and select
+      <p>Welcome to WPILib Help! To open this window again, open the Command Palette (F1 or View->Command Palette), and
+        select
         <b>Open WPILib Help.</b>
       </p>
       <p>For more help, see
         <a href="https://docs.wpilib.org/en/stable">the WPILib documentation.</a>
       </p>
     </div>
-    
+
     <div class="project-row">
       <h2 class="project-subtitle">Common Tasks</h2>
+      <br>
+      <p></p>
       <ul>
         <li>Create a new project: Click on the Command Palette and type "WPILib: Create a new project"</li>
         <li>Deploy code to the robot: Click on the Command Palette and type "WPILib: Deploy Robot Code"</li>
@@ -32,14 +35,15 @@
         <li>Install vendor libraries: Click on "WPILib Dependencies" in the Activity Bar</li>
       </ul>
     </div>
-    
+
     <div class="project-row">
       <h2 class="project-subtitle">Setting Up Your Workspace</h2>
       <ul>
         <li>Set your team number: Click on the Command Palette and type "WPILib: Set Team Number"</li>
         <li>Enable desktop support: Click on the Command Palette and type "WPILib: Set Desktop Support"</li>
         <li>Run RioLog: Click on the Command Palette and type "WPILib: Start RioLog"</li>
-        <li>Import a project: Click on the Command Palette and type "WPILib: Import a WPILib 2020-2024 Gradle project"</li>
+        <li>Import a project: Click on the Command Palette and type "WPILib: Import a WPILib 2020-2024 Gradle project"
+        </li>
       </ul>
     </div>
 
@@ -48,14 +52,15 @@
       <button id="openDocumentation" class="project-button">Open WPILib Documentation</button>
     </div>
   </div>
+  </div>
 
   <script>
     const vscode = acquireVsCodeApi();
-    
+
     document.getElementById('openCommandPalette').addEventListener('click', () => {
       vscode.postMessage({ command: 'openCommandPalette' });
     });
-    
+
     document.getElementById('openDocumentation').addEventListener('click', () => {
       vscode.postMessage({ command: 'openDocumentation' });
     });

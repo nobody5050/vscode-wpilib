@@ -47,6 +47,7 @@
 
 .uninstall-button {
   padding: 4px !important;
+
   &>i {
     margin-right: 4px !important;
     margin-left: 4px !important;
@@ -57,7 +58,8 @@
   overflow: visible;
 }
 
-.vscode-select select, .vscode-select {
+.vscode-select select,
+.vscode-select {
   flex-shrink: 2;
 }
 
@@ -132,7 +134,7 @@ html {
   padding: 0;
 }
 
-.vscode-select select[multiple] + .chevron-icon {
+.vscode-select select[multiple]+.chevron-icon {
   display: none;
 }
 
@@ -265,7 +267,7 @@ html {
 
 /* collapsible */
 
-.vscode-collapsible + .vscode-collapsible {
+.vscode-collapsible+.vscode-collapsible {
   border-top: 1px solid var(--vscode-sideBarSectionHeader-border);
 }
 
@@ -555,6 +557,15 @@ html {
 }
 
 .error-content {
+
+/* Rules to properly handle error collapsing in RioLog */
+.error-content.collapsed .stack-trace,
+.error-content.collapsed .location-info {
+  display: none;
+}
+  margin-left: 12px;
+}
+}
   margin-left: 12px;
 }
 
@@ -689,6 +700,7 @@ label.toolbar-button {
   font-size: 16px;
   margin-bottom: 12px;
   color: var(--vscode-foreground);
+  width: 100%
 }
 
 .project-error-text {
@@ -922,7 +934,7 @@ label.toolbar-button {
 button {
   font-size: 13px;
   padding: 4px 8px;
-  margin: 4px 0;
+  margin: 0;
   cursor: pointer;
   background-color: var(--vscode-button-background, #0e639c);
   color: var(--vscode-button-foreground, white);
@@ -947,4 +959,9 @@ input[type="number"] {
 input.error {
   border-color: var(--vscode-inputValidation-errorBorder, red) !important;
   outline-color: var(--vscode-inputValidation-errorBorder, red) !important;
+}
+
+.error-content.collapsed .stack-trace,
+.error-content.collapsed .location-info {
+  display: none;
 }

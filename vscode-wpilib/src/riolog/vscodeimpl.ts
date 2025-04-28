@@ -154,7 +154,7 @@ export class RioLogHTMLProvider implements IHTMLProvider {
 
   public getHTML(webview: vscode.Webview): string {
     const onDiskPath = vscode.Uri.file(path.join(this.resourceRoot, 'dist', 'riologpage.js'));
-    const cssPath = vscode.Uri.file(path.join(this.resourceRoot, '..', 'media', 'main.css'));
+    const cssPath = vscode.Uri.file(path.join(this.resourceRoot, '..', 'resources', 'media', 'main.css'));
 
     const scriptResourcePath = webview.asWebviewUri(onDiskPath);
     const cssResourcePath = webview.asWebviewUri(cssPath);

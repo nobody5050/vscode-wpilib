@@ -75,7 +75,7 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
 
       localResourceRoots: [
         this._extensionUri,
-        vscode.Uri.joinPath(this._extensionUri, 'media'),
+        vscode.Uri.joinPath(this._extensionUri, 'resources', 'media'),
       ],
     };
 
@@ -550,52 +550,125 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
       );
     };
 
-    const scriptUri = createUri(`media/main.js`);
-    const styleUri = createUri(`media/main.css`);
-    const codiconUri = createUri(`media/icons.css`);
+    const scriptUri = createUri(`resources/media/main.js`);
+    const styleUri = createUri(`resources/media/main.css`);
+    const codiconUri = createUri(`resources/media/icons.css`);
 
     // Return the complete HTML
     return `
-            <!DOCTYPE html>
-            <html lang="en">
-                    <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Vendor Dependencies</title>                
-                <link rel="preload" href="${styleUri}" as="style">
-                <link rel="preload" href="${codiconUri}" as="style">
-                <link rel="preload" href="${scriptUri}" as="script">
-                
-                <link rel="stylesheet" href="${styleUri}">
-                <link rel="stylesheet" href="${codiconUri}" id="vscode-codicon-stylesheet">
-            </head>
-            <body>
-                <div class="top-line">
-                    <button id="updateall-action" class="vscode-button block">Update All</button>
-                </div>
-                <details class="vscode-collapsible" open>
-                  <summary>
-                    <i class="codicon codicon-chevron-right icon-arrow"></i>
-                    <h2 class="title">
-                      Installed Dependencies
-                    </h2>
-                    <div class="actions" id="installed-actions"></div>
-                  </summary>
-                  <div id="installed-dependencies"></div>
-                </details>
-                <details class="vscode-collapsible"  open>
-                  <summary>
-                    <i class="codicon codicon-chevron-right icon-arrow"></i>
-                    <h2 class="title">
-                      Available Dependencies
-                    </h2>
-                    <div class="actions" id="available-actions"></div>
-                  </summary>
-                  <div id="available-dependencies"></div>
-                </details>
-                <script src="${scriptUri}"></script>
-            </body>
-            </html>
-        `;
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WPILib Vendor Dependencies</title>                
+        <link rel="preload" href="${styleUri}" as="style">
+        <link rel="preload" href="${codiconUri}" as="style">
+        <link rel="preload" href="${scriptUri}" as="script">
+        
+        <link rel="stylesheet" href="${styleUri}">
+        <link rel="stylesheet" href="${codiconUri}" id="vscode-codicon-stylesheet">
+        <style>
+          .dependency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+          }
+          .dependency-name {
+            font-weight: 600;
+            font-size: 14px;
+          }
+          .dependency-version {
+            margin-left: 8px;
+          }
+          .dependency-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .dependency-description {
+            color: var(--vscode-descriptionForeground);
+            margin-top: 4px;
+            font-size: 12px;
+            line-height: 1.4;
+          }
+          .section-header {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--vscode-foreground);
+          }
+          .empty-state {
+            color: var(--vscode-descriptionForeground);
+            font-style: italic;
+            padding: 10px;
+            text-align: center;
+          }
+          .uninstall-button {
+          /* Fix for height mismatch between select and buttons */
+          .vscode-select select {
+            height: 24px;
+            box-sizing: border-box;
+            line-height: 18px;
+            padding: 2px 4px;
+            border-radius: 2px;
+          }
+          button[id*="version-action"],
+          button[id*="uninstall-action"],
+          button[id*="install-action"] {
+            height: 24px;
+            box-sizing: border-box;
+            padding: 1px 8px;
+            display: flex;
+            align-items: center;
+          }
+          .update {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+          }
+            background-color: var(--vscode-button-secondaryBackground, transparent);
+            color: var(--vscode-button-secondaryForeground);
+            border: 1px solid var(--vscode-button-border);
+          }
+        </style>
+      </head>
+      <body>
+        <div class="top-line">
+          <button id="updateall-action" class="vscode-button block">
+            <i class="codicon codicon-sync"></i>
+            Update All Dependencies
+          </button>
+        </div>
+        
+        <details class="vscode-collapsible" open>
+          <summary>
+            <i class="codicon codicon-chevron-right icon-arrow"></i>
+            <h2 class="title">
+              Installed Dependencies
+            </h2>
+            <div class="actions" id="installed-actions"></div>
+          </summary>
+          <div id="installed-dependencies"></div>
+        </details>
+        
+        <details class="vscode-collapsible" open>
+          <summary>
+            <i class="codicon codicon-chevron-right icon-arrow"></i>
+            <h2 class="title">
+              Available Dependencies
+            </h2>
+            <div class="actions" id="available-actions"></div>
+          </summary>
+          <div id="available-dependencies"></div>
+        </details>
+        
+        <script src="${scriptUri}"></script>
+      </body>
+    </html>
+  `;
   }
 }

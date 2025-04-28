@@ -65,7 +65,7 @@
                 {
                     "id": "wpilib-vendordeps",
                     "title": "WPILib Vendor Dependencies",
-                    "icon": "media/wpilib.png"
+                    "icon": "resources/media/wpilib.png"
                 }
             ]
         },
@@ -438,7 +438,7 @@
                     "type": "webview",
                     "id": "wpilib.dependencyView",
                     "name": "WPILib Vendor Dependencies",
-                    "icon": "media/wpilib.png"
+                    "icon": "resources/media/wpilib.png"
                 }
             ]
         },

@@ -428,7 +428,7 @@ function insertMessage(ts: number, line: string, li: HTMLElement, color?: string
   li.appendChild(messageContent);
 }
 
-function insertStackTrace(st: string, li: HTMLElement, color?: string) {
+function insertStackTrace(st: string, container: HTMLElement, color?: string) {
   const div = document.createElement('div');
   div.className = 'stack-trace';
 
@@ -448,10 +448,10 @@ function insertStackTrace(st: string, li: HTMLElement, color?: string) {
   if (color !== undefined) {
     div.style.color = color;
   }
-  li.appendChild(div);
+  container.appendChild(div);
 }
 
-function insertLocation(loc: string, li: HTMLElement, color?: string) {
+function insertLocation(loc: string, container: HTMLElement, color?: string) {
   const div = document.createElement('div');
   div.className = 'location-info';
 
@@ -471,7 +471,7 @@ function insertLocation(loc: string, li: HTMLElement, color?: string) {
   if (color !== undefined) {
     div.style.color = color;
   }
-  li.appendChild(div);
+  container.appendChild(div);
 }
 
 export function addMessage(message: IPrintMessage | IErrorMessage) {
@@ -525,27 +525,28 @@ export function addPrint(message: IPrintMessage) {
   }
 }
 
-export function expandError(message: IErrorMessage, li: HTMLElement, color?: string) {
+// Creates HTML for an expanded error view
+export function createErrorContent(message: IErrorMessage, container: HTMLElement, color?: string) {
   // Clear existing content first
-  li.innerHTML = '';
-
-  // Add the expand/collapse button
-  const toggleButton = document.createElement('div');
-  toggleButton.className = 'toggle-button expanded';
-  li.appendChild(toggleButton);
-
-  const contentContainer = document.createElement('div');
-  contentContainer.className = 'error-content';
-  li.appendChild(contentContainer);
+  container.innerHTML = '';
 
   // First append the message
-  insertMessage(message.timestamp, message.details, contentContainer, color);
+  insertMessage(message.timestamp, message.details, container, color);
 
   // Then append location, tabbed in once
-  insertLocation(message.location, contentContainer, color);
+  insertLocation(message.location, container, color);
 
   // Then append stack trace, tabbed in twice
-  insertStackTrace(message.callStack, contentContainer, color);
+  insertStackTrace(message.callStack, container, color);
+}
+
+// Create HTML for a collapsed error view
+export function createCollapsedErrorContent(message: IErrorMessage, container: HTMLElement, color?: string) {
+  // Clear existing content
+  container.innerHTML = '';
+  
+  // Just show the error message
+  insertMessage(message.timestamp, message.details, container, color);
 }
 
 export function addError(message: IErrorMessage) {
@@ -568,57 +569,47 @@ export function addError(message: IErrorMessage) {
     entry.style.display = 'none';
   }
 
-  // Initial display with just the error message
+  // Create the toggle button
   const toggleButton = document.createElement('div');
   toggleButton.className = 'toggle-button collapsed';
   entry.appendChild(toggleButton);
 
+  // Create the content container
   const contentContainer = document.createElement('div');
   contentContainer.className = 'error-content collapsed';
   entry.appendChild(contentContainer);
 
-  insertMessage(
-    message.timestamp,
-    message.details,
-    contentContainer,
-    message.messageType === MessageType.Warning 
-      ? 'var(--vscode-warningForeground, ' + UI_COLORS.warning + ')' 
-      : 'var(--vscode-testing-iconFailed, ' + UI_COLORS.error + ')'
-  );
+  // Add the initial collapsed view content
+  const textColor = message.messageType === MessageType.Warning
+    ? 'var(--vscode-warningForeground, ' + UI_COLORS.warning + ')'
+    : 'var(--vscode-testing-iconFailed, ' + UI_COLORS.error + ')';
+    
+  createCollapsedErrorContent(message, contentContainer, textColor);
 
-  entry.addEventListener('click', function () {
+  // Add click handler to toggle expansion
+  entry.addEventListener('click', function() {
     const isExpanded = this.getAttribute('data-expanded') === 'true';
+    const toggleBtn = this.querySelector('.toggle-button');
+    const contentCtr = this.querySelector('.error-content');
+    
     if (isExpanded) {
       // Collapse
       this.setAttribute('data-expanded', 'false');
-      toggleButton.className = 'toggle-button collapsed';
-      contentContainer.className = 'error-content collapsed';
-
-      // Clear and re-add just the error message
-      contentContainer.innerHTML = '';
-      insertMessage(
-        message.timestamp,
-        message.details,
-        contentContainer,
-        message.messageType === MessageType.Warning 
-          ? 'var(--vscode-warningForeground, ' + UI_COLORS.warning + ')' 
-          : 'var(--vscode-testing-iconFailed, ' + UI_COLORS.error + ')'
-      );
+      if (toggleBtn) toggleBtn.className = 'toggle-button collapsed';
+      if (contentCtr) {
+        contentCtr.className = 'error-content collapsed';
+        createCollapsedErrorContent(message, contentCtr as HTMLElement, textColor);
+      }
     } else {
       // Expand
       this.setAttribute('data-expanded', 'true');
-      toggleButton.className = 'toggle-button expanded';
-      contentContainer.className = 'error-content expanded';
-
-      // Show full details
-      expandError(
-        message,
-        entry,
-        message.messageType === MessageType.Warning 
-          ? 'var(--vscode-warningForeground, ' + UI_COLORS.warning + ')' 
-          : 'var(--vscode-testing-iconFailed, ' + UI_COLORS.error + ')'
-      );
+      if (toggleBtn) toggleBtn.className = 'toggle-button expanded';
+      if (contentCtr) {
+        contentCtr.className = 'error-content expanded';
+        createErrorContent(message, contentCtr as HTMLElement, textColor);
+      }
     }
+    
     checkResize();
   });
 
@@ -834,7 +825,7 @@ export function setLivePage() {
       timestampsButton.classList.remove('active');
     }
   }
-  
+
   // Ensure warnings button starts in correct state
   const warningsButton = document.getElementById('warnings-button');
   if (warningsButton) {
