@@ -1,8 +1,8 @@
-'use scrict';
+'use strict';
 import * as vscode from 'vscode';
 import { ICodeDeployer, IDeployDebugAPI } from 'vscode-wpilibapi';
 import { RioLogWindow } from 'wpilib-riolog';
-import { localize as i18n } from './locale';
+import { localize as i18n } from './utils/i18n/locale';
 import { logger } from './logger';
 import { PreferencesAPI } from './preferencesapi';
 import { LiveRioConsoleProvider, RioLogWebviewProvider } from './riolog/vscodeimpl';
@@ -38,8 +38,6 @@ class WPILibDebugConfigurationProvider implements vscode.DebugConfigurationProvi
     if ('hwsim' in config) {
       hwsim = config.hwsim as boolean;
     }
-
-    // eslint-disable-next-line no-async-promise-executor
     return new Promise<undefined>(async (resolve) => {
       if (desktop) {
         if (hwsim) {

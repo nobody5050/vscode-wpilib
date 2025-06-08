@@ -6,6 +6,7 @@
 // const config = JSON.parse(process.env.VSCODE_NLS_CONFIG as string);
 // const localize = nls.config(config as nls.Options)();
 
+import { access, mkdir } from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IExternalAPI } from 'vscode-wpilibapi';
@@ -14,11 +15,11 @@ import { BuiltinTools } from './builtintools';
 import { CommandAPI } from './commandapi';
 import { activateCpp } from './cpp/cpp';
 import { ApiProvider } from './cppprovider/apiprovider';
+import { DependencyViewProvider } from './dependencyview/dependencyView';
 import { DeployDebugAPI } from './deploydebugapi';
 import { ExecuteAPI } from './executor';
 import { activateJava } from './java/java';
 import { findJdkPath } from './jdkdetector';
-import { localize as i18n } from './locale';
 import {
   closeLogger,
   getMainLogFile,
@@ -29,23 +30,21 @@ import { PersistentFolderState } from './persistentState';
 import { Preferences } from './preferences';
 import { PreferencesAPI } from './preferencesapi';
 import { ProjectInfoGatherer } from './projectinfo';
-import { ExampleTemplateAPI } from './shared/exampletemplateapi';
-import { UtilitiesAPI } from './shared/utilitiesapi';
-import { addVendorExamples } from './shared/vendorexamples';
 import { ToolAPI } from './toolapi';
 import {
-  existsAsync,
-  mkdirpAsync,
   setExtensionContext,
-  setJavaHome,
+  setJavaHome
 } from './utilities';
+import { localize as i18n } from './utils/i18n/locale';
+import { ExampleTemplateAPI } from './utils/project/exampletemplateapi';
+import { UtilitiesAPI } from './utils/project/utilitiesapi';
+import { addVendorExamples } from './utils/project/vendorexamples';
 import { fireVendorDepsChanged, VendorLibraries } from './vendorlibraries';
 import { createVsCommands } from './vscommands';
 import { Gradle2020Import } from './webviews/gradle2020import';
 import { Help } from './webviews/help';
 import { ProjectCreator } from './webviews/projectcreator';
 import { WPILibUpdates } from './wpilibupdates';
-import { DependencyViewProvider } from './dependencyView';
 
 // External API class to implement the IExternalAPI interface
 class ExternalAPI implements IExternalAPI {
@@ -245,251 +244,255 @@ async function handleAfterTrusted(
 
       context.subscriptions.push(depProvider);
     }
-  } catch (err) {
-    logger.error('error creating dependency view', err);
-    creationError = true;
-  }
 
-  // Create all of our commands that the extension runs
-  createVsCommands(context, externalApi);
+    // Create all of our commands that the extension runs
+    createVsCommands(context, externalApi);
 
-  // Detect if we are a new WPILib project, and if so display the WPILib help window.
-  // Also check for local GradleRIO update
-  const wp = vscode.workspace.workspaceFolders;
-  if (wp) {
-    for (const w of wp) {
-      const prefs = externalApi.getPreferencesAPI().getPreferences(w);
-      if (prefs.getIsWPILibProject()) {
-        const vendorDepsPattern = new vscode.RelativePattern(
-          path.join(w.uri.fsPath, 'vendordeps'),
-          '**/*.json'
-        );
-        const vendorDepsWatcher =
-          vscode.workspace.createFileSystemWatcher(vendorDepsPattern);
-        context.subscriptions.push(vendorDepsWatcher);
-        const localW = w;
+    // Detect if we are a new WPILib project, and if so display the WPILib help window.
+    // Also check for local GradleRIO update
+    const wp = vscode.workspace.workspaceFolders;
+    if (wp) {
+      for (const w of wp) {
+        const prefs = externalApi.getPreferencesAPI().getPreferences(w);
+        if (prefs.getIsWPILibProject()) {
+          const vendorDepsPattern = new vscode.RelativePattern(
+            path.join(w.uri.fsPath, 'vendordeps'),
+            '**/*.json'
+          );
+          const vendorDepsWatcher =
+            vscode.workspace.createFileSystemWatcher(vendorDepsPattern);
+          context.subscriptions.push(vendorDepsWatcher);
+          const localW = w;
 
-        const fireEvent = () => {
-          fireVendorDepsChanged(localW);
-        };
+          const fireEvent = () => {
+            fireVendorDepsChanged(localW);
+          };
 
-        vendorDepsWatcher.onDidChange(fireEvent, null, context.subscriptions);
+          vendorDepsWatcher.onDidChange(fireEvent, null, context.subscriptions);
 
-        vendorDepsWatcher.onDidCreate(fireEvent, null, context.subscriptions);
+          vendorDepsWatcher.onDidCreate(fireEvent, null, context.subscriptions);
 
-        vendorDepsWatcher.onDidDelete(fireEvent, null, context.subscriptions);
+          vendorDepsWatcher.onDidDelete(fireEvent, null, context.subscriptions);
 
-        if (prefs.getProjectYear() === 'intellisense') {
-          logger.log('Intellisense only build project found');
-          continue;
-        }
+          if (prefs.getProjectYear() === 'intellisense') {
+            logger.log('Intellisense only build project found');
+            continue;
+          }
 
-        if ((prefs.getCurrentLanguage() !== 'cpp' && prefs.getCurrentLanguage() !== 'java')) {
-          logger.log('Project with Unknown Language: ' + prefs.getCurrentLanguage());
-          continue;
-        }
+          if ((prefs.getCurrentLanguage() !== 'cpp' && prefs.getCurrentLanguage() !== 'java')) {
+            logger.log('Project with Unknown Language: ' + prefs.getCurrentLanguage());
+            continue;
+          }
 
-        if (prefs.getProjectYear() !== '2025') {
-          const importPersistantState = new PersistentFolderState(
-            'wpilib.2025persist',
+          if (prefs.getProjectYear() !== '2025') {
+            const importPersistentState = new PersistentFolderState(
+              'wpilib.2025persist',
+              false,
+              w.uri.fsPath
+            );
+            if (importPersistentState.Value === false) {
+              const upgradeResult = await vscode.window.showInformationMessage(
+                i18n(
+                  'message',
+                  'This project is not compatible with this version of the extension. Would you like to import this project into 2025?'
+                ),
+                {
+                  modal: true,
+                },
+                { title: 'Yes' },
+                { title: 'No', isCloseAffordance: true },
+                { title: "No, Don't ask again" }
+              );
+              if (upgradeResult?.title === 'Yes') {
+                if (gradle2020import) {
+                  await gradle2020import.startWithProject(w.uri);
+                }
+              } else if (upgradeResult?.title === "No, Don't ask again") {
+                importPersistentState.Value = true;
+              }
+            }
+            continue;
+          }
+
+          if (
+            prefs.getCurrentLanguage() === 'cpp' ||
+            prefs.getCurrentLanguage() === 'java'
+          ) {
+            let didUpdate: boolean = false;
+            if (wpilibUpdate) {
+              didUpdate = await wpilibUpdate.checkForInitialUpdate(w);
+            }
+
+            let runBuild: boolean ;
+            try {
+              await access(path.join(w.uri.fsPath, 'build'));
+              runBuild = true;
+            } catch {
+              runBuild = false;
+            }
+
+            if (didUpdate) {
+              const result = await vscode.window.showInformationMessage(
+                i18n(
+                  'message',
+                  'It is recommended to run a "Build" after a WPILib update to ensure dependencies are installed correctly. ' +
+                  'Would you like to do this now?'
+                ),
+                {
+                  modal: true,
+                },
+                { title: i18n('ui', 'Yes') },
+                { title: i18n('ui', 'No'), isCloseAffordance: true }
+              );
+              if (result?.title !== i18n('ui', 'Yes')) {
+                runBuild = false;
+              }
+            }
+
+            if (runBuild) {
+              updatePromptCount++;
+              externalApi
+                .getBuildTestAPI()
+                .buildCode(w, undefined)
+                .then(() => {
+                  updatePromptCount--;
+                  if (updatePromptCount === 0) {
+                    ApiProvider.promptForUpdates = true;
+                  }
+                })
+                .catch(() => {
+                  updatePromptCount--;
+                  if (updatePromptCount === 0) {
+                    ApiProvider.promptForUpdates = true;
+                  }
+                });
+            }
+          }
+
+          const persistentState = new PersistentFolderState(
+            'wpilib.newProjectHelp',
             false,
             w.uri.fsPath
           );
-          if (importPersistantState.Value === false) {
-            const upgradeResult = await vscode.window.showInformationMessage(
-              i18n(
-                'message',
-                'This project is not compatible with this version of the extension. Would you like to import this project into 2025?'
-              ),
-              {
-                modal: true,
-              },
-              { title: 'Yes' },
-              { title: 'No', isCloseAffordance: true },
-              { title: "No, Don't ask again" }
-            );
-            if (upgradeResult?.title === 'Yes') {
-              if (gradle2020import) {
-                await gradle2020import.startWithProject(w.uri);
-              }
-            } else if (upgradeResult?.title === "No, Don't ask again") {
-              importPersistantState.Value = true;
+          if (persistentState.Value === false) {
+            persistentState.Value = true;
+            if (help) {
+              help.displayHelp();
             }
+            break;
           }
-          continue;
-        }
-
-        if (
-          prefs.getCurrentLanguage() === 'cpp' ||
-          prefs.getCurrentLanguage() === 'java'
-        ) {
-          let didUpdate: boolean = false;
-          if (wpilibUpdate) {
-            didUpdate = await wpilibUpdate.checkForInitialUpdate(w);
-          }
-
-          let runBuild: boolean = !(await existsAsync(
-            path.join(w.uri.fsPath, 'build')
-          ));
-
-          if (didUpdate) {
-            const result = await vscode.window.showInformationMessage(
-              i18n(
-                'message',
-                'It is recommended to run a "Build" after a WPILib update to ensure dependencies are installed correctly. ' +
-                  'Would you like to do this now?'
-              ),
-              {
-                modal: true,
-              },
-              { title: i18n('ui', 'Yes') },
-              { title: i18n('ui', 'No'), isCloseAffordance: true }
-            );
-            if (result?.title !== i18n('ui', 'Yes')) {
-              runBuild = false;
-            }
-          }
-
-          if (runBuild) {
-            updatePromptCount++;
-            externalApi
-              .getBuildTestAPI()
-              .buildCode(w, undefined)
-              .then(() => {
-                updatePromptCount--;
-                if (updatePromptCount === 0) {
-                  ApiProvider.promptForUpdates = true;
-                }
-              })
-              .catch(() => {
-                updatePromptCount--;
-                if (updatePromptCount === 0) {
-                  ApiProvider.promptForUpdates = true;
-                }
-              });
-          }
-        }
-
-        const persistentState = new PersistentFolderState(
-          'wpilib.newProjectHelp',
-          false,
-          w.uri.fsPath
-        );
-        if (persistentState.Value === false) {
-          persistentState.Value = true;
-          if (help) {
-            help.displayHelp();
-          }
-          break;
-        }
-      } else {
-        const persistentState = new PersistentFolderState(
-          'wpilib.invalidFolder',
-          false,
-          w.uri.fsPath
-        );
-        if (persistentState.Value === false) {
-          // Check if wpilib project might be in a subfolder
-          // Only go 1 subfolder deep
-          const pattern = new vscode.RelativePattern(
-            w,
-            '*/' +
+        } else {
+          const persistentState = new PersistentFolderState(
+            'wpilib.invalidFolder',
+            false,
+            w.uri.fsPath
+          );
+          if (persistentState.Value === false) {
+            // Check if wpilib project might be in a subfolder
+            // Only go 1 subfolder deep
+            const pattern = new vscode.RelativePattern(
+              w,
+              '*/' +
               Preferences.wpilibPreferencesFolder +
               '/' +
               Preferences.preferenceFileName
-          );
+            );
 
-          const wpilibFiles = await vscode.workspace.findFiles(pattern);
+            const wpilibFiles = await vscode.workspace.findFiles(pattern);
 
-          if (wpilibFiles.length === 1) {
-            // Only 1 subfolder found, likely it
-            const openResult = await vscode.window.showInformationMessage(
-              i18n(
-                'message',
-                'Incorrect folder opened for WPILib project. ' +
+            if (wpilibFiles.length === 1) {
+              // Only 1 subfolder found, likely it
+              const openResult = await vscode.window.showInformationMessage(
+                i18n(
+                  'message',
+                  'Incorrect folder opened for WPILib project. ' +
                   'The correct folder was found in a subfolder, ' +
                   'Would you like to open it? Selecting no will cause many tasks to not work.'
-              ),
-              {
-                modal: true,
-              },
-              { title: i18n('ui', 'Yes') },
-              { title: i18n('ui', 'No'), isCloseAffordance: true },
-              { title: i18n('ui', "No, Don't ask again for this folder") }
-            );
-            if (openResult?.title === i18n('ui', 'Yes')) {
-              const wpRoot = vscode.Uri.file(
-                path.dirname(path.dirname(wpilibFiles[0].fsPath))
+                ),
+                {
+                  modal: true,
+                },
+                { title: i18n('ui', 'Yes') },
+                { title: i18n('ui', 'No'), isCloseAffordance: true },
+                { title: i18n('ui', "No, Don't ask again for this folder") }
               );
-              await vscode.commands.executeCommand(
-                'vscode.openFolder',
-                wpRoot,
-                false
-              );
-            } else if (
-              openResult?.title ===
-              i18n('ui', "No, Don't ask again for this folder")
-            ) {
-              persistentState.Value = true;
-            }
-          } else if (wpilibFiles.length > 1) {
-            // Multiple subfolders found
-            const openResult = await vscode.window.showInformationMessage(
-              'Incorrect folder opened for WPILib project. ' +
-                'Multiple possible subfolders found, ' +
-                'Would you like to open one? Selecting no will cause many tasks to not work.',
-              {
-                modal: true,
-              },
-              { title: i18n('ui', 'Yes') },
-              { title: i18n('ui', 'No'), isCloseAffordance: true },
-              { title: i18n('ui', "No, Don't ask again for this folder") }
-            );
-            if (openResult?.title === i18n('ui', 'Yes')) {
-              const list = wpilibFiles.map((value) => {
-                const fullRoot = path.dirname(path.dirname(value.fsPath));
-                const baseFolder = path.basename(fullRoot);
-                return {
-                  fullFolder: vscode.Uri.file(fullRoot),
-                  label: baseFolder,
-                };
-              });
-              const picked = await vscode.window.showQuickPick(list, {
-                canPickMany: false,
-              });
-              if (picked !== undefined) {
+              if (openResult?.title === i18n('ui', 'Yes')) {
+                const wpRoot = vscode.Uri.file(
+                  path.dirname(path.dirname(wpilibFiles[0].fsPath))
+                );
                 await vscode.commands.executeCommand(
                   'vscode.openFolder',
-                  picked.fullFolder,
+                  wpRoot,
                   false
                 );
+              } else if (
+                openResult?.title ===
+                i18n('ui', "No, Don't ask again for this folder")
+              ) {
+                persistentState.Value = true;
               }
-            } else if (
-              openResult?.title ===
-              i18n('ui', "No, Don't ask again for this folder")
-            ) {
-              persistentState.Value = true;
+            } else if (wpilibFiles.length > 1) {
+              // Multiple subfolders found
+              const openResult = await vscode.window.showInformationMessage(
+                'Incorrect folder opened for WPILib project. ' +
+                'Multiple possible subfolders found, ' +
+                'Would you like to open one? Selecting no will cause many tasks to not work.',
+                {
+                  modal: true,
+                },
+                { title: i18n('ui', 'Yes') },
+                { title: i18n('ui', 'No'), isCloseAffordance: true },
+                { title: i18n('ui', "No, Don't ask again for this folder") }
+              );
+              if (openResult?.title === i18n('ui', 'Yes')) {
+                const list = wpilibFiles.map((value) => {
+                  const fullRoot = path.dirname(path.dirname(value.fsPath));
+                  const baseFolder = path.basename(fullRoot);
+                  return {
+                    fullFolder: vscode.Uri.file(fullRoot),
+                    label: baseFolder,
+                  };
+                });
+                const picked = await vscode.window.showQuickPick(list, {
+                  canPickMany: false,
+                });
+                if (picked !== undefined) {
+                  await vscode.commands.executeCommand(
+                    'vscode.openFolder',
+                    picked.fullFolder,
+                    false
+                  );
+                }
+              } else if (
+                openResult?.title ===
+                i18n('ui', "No, Don't ask again for this folder")
+              ) {
+                persistentState.Value = true;
+              }
             }
           }
         }
       }
     }
+
+    if (creationError) {
+      vscode.window.showErrorMessage(
+        'A portion of WPILib failed to initialize. See log for details'
+      );
+    }
+
+    // Log our extension is active
+    logger.log('Congratulations, your extension "vscode-wpilib" is now active!');
+
+    if (updatePromptCount === 0) {
+      ApiProvider.promptForUpdates = true;
+    }
+
+    return externalApi;
+  } catch (err) {
+    logger.error('Error during extension activation', err);
+    return externalApi; // Add return statement for error path
   }
-
-  if (creationError) {
-    vscode.window.showErrorMessage(
-      'A portion of WPILib failed to initialize. See log for details'
-    );
-  }
-
-  // Log our extension is active
-  logger.log('Congratulations, your extension "vscode-wpilib" is now active!');
-
-  if (updatePromptCount === 0) {
-    ApiProvider.promptForUpdates = true;
-  }
-
-  return externalApi;
 }
 
 // this method is called when your extension is activated
@@ -512,7 +515,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const logPath = path.join(frcHomeDir, 'logs');
   try {
-    await mkdirpAsync(logPath);
+    await mkdir(logPath, { recursive: true });
     setLoggerDirectory(logPath);
   } catch (err) {
     logger.error('Error creating logger', err);
@@ -557,7 +560,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('wpilibcore.showLogFolder', async () => {
       let mainLog = getMainLogFile();
-      if (!(await existsAsync(mainLog))) {
+      try {
+        await access(mainLog);
+      } catch {
         mainLog = path.dirname(mainLog);
       }
       await vscode.commands.executeCommand(
@@ -608,23 +613,12 @@ export async function activate(context: vscode.ExtensionContext) {
     help
   );
 
-  // Register the command with arguments
-  let disposable = vscode.commands.registerCommand(
-    'extension.showWebsite', 
-    (url: string, tabTitle: string) => {
-      // If no arguments were passed, you can prompt the user (optional):
-      if (!url) {
-        vscode.window.showErrorMessage('URL not provided!');
-        return;
-      }
-      if (!tabTitle) {
-        tabTitle = "My Website"; // fallback title if not provided
-      }
-
-      // Create and show a new webview panel
+  const testSvelteDisposable = vscode.commands.registerCommand(
+    'wpilibcore.showTestSvelte',
+    () => {
       const panel = vscode.window.createWebviewPanel(
-        'myWebview',      // internal identifier
-        tabTitle,         // use the dynamic title
+        'testSvelte',
+        'Test Svelte Component',
         vscode.ViewColumn.One,
         {
           enableScripts: true,
@@ -632,46 +626,32 @@ export async function activate(context: vscode.ExtensionContext) {
         }
       );
 
-      // Set the HTML content of the webview
-      panel.webview.html = getWebviewContent(url);
+      const scriptPath = vscode.Uri.file(
+        path.join(context.extensionPath, 'resources', 'dist', 'testSvelte.js')
+      );
+      const scriptUri = panel.webview.asWebviewUri(scriptPath);
+
+      panel.webview.html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body>
+            <script src="${scriptUri}"></script>
+          </body>
+        </html>
+      `;
     }
   );
 
-  context.subscriptions.push(disposable);
-  
+  context.subscriptions.push(testSvelteDisposable);
+
   return externalApi;
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
   closeLogger();
-}
-
-function getWebviewContent(url: string): string {
-  // Basic HTML that includes an iframe to your target website.
-  // NOTE: This will only work if the site allows iframes.
-  return `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      body, html {
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        overflow: hidden;
-        background: #fff;
-      }
-      iframe {
-        border: none;
-        width: 100%;
-        height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <iframe src="${url}" sandbox="allow-scripts allow-same-origin"></iframe>
-  </body>
-  </html>`;
 }

@@ -1,7 +1,7 @@
 'use strict';
 
 import { IDisposable, IIPCReceiveMessage, IRioConsole, IRioConsoleProvider, IWindowProvider, IWindowView, ReceiveTypes, SendTypes } from './interfaces';
-import { IErrorMessage, IPrintMessage } from './message';
+import { IErrorMessage, IPrintMessage, MessageType } from './message';
 
 export class RioLogWindow {
   private webview: IWindowView | undefined = undefined;
@@ -70,10 +70,12 @@ export class RioLogWindow {
 
   private createWebView() {
     this.webview = this.windowProvider.createWindowView();
+    
     this.webview.on('windowActive', async () => {
       if (this.webview === undefined) {
         return;
       }
+      
       // Window goes active.
       await this.webview.postMessage({
         message: this.hiddenArray,

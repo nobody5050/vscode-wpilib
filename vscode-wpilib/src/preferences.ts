@@ -1,11 +1,12 @@
 'use strict';
+import { access, readFile, writeFile } from 'fs/promises';
 import * as jsonc from 'jsonc-parser';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IPreferences } from 'vscode-wpilibapi';
-import { localize as i18n } from './locale';
-import { IPreferencesJson } from './shared/preferencesjson';
-import { existsAsync, mkdirAsync, readFileAsync, writeFileAsync } from './utilities';
+import { mkdir } from 'fs/promises';
+import { localize as i18n } from './utils/i18n/locale';
+import { IPreferencesJson } from './utils/project/preferencesjson';
 
 const defaultPreferences: IPreferencesJson = {
   currentLanguage: 'none',
@@ -43,7 +44,7 @@ export class Preferences implements IPreferences {
     return prefs;
   }
 
-  public static getPrefrencesFilePath(root: string): string {
+  public static getPreferencesFilePath(root: string): string {
     return path.join(root, Preferences.wpilibPreferencesFolder, Preferences.preferenceFileName);
   }
 
@@ -275,15 +276,16 @@ export class Preferences implements IPreferences {
   }
 
   private async asyncInitialize() {
-    const configFilePath = Preferences.getPrefrencesFilePath(this.workspace.uri.fsPath);
+    const configFilePath = Preferences.getPreferencesFilePath(this.workspace.uri.fsPath);
 
-    if (await existsAsync(configFilePath)) {
+    try {
+      await access(configFilePath);
       vscode.commands.executeCommand('setContext', 'isWPILibProject', true);
       this.isWPILibProject = true;
       this.preferencesFile = vscode.Uri.file(configFilePath);
       this.preferencesJson = defaultPreferences;
       await this.updatePreferences();
-    } else {
+    } catch {
       // Set up defaults, and create
       this.preferencesJson = defaultPreferences;
     }
@@ -299,17 +301,17 @@ export class Preferences implements IPreferences {
       return;
     }
 
-    const results = await readFileAsync(this.preferencesFile.fsPath, 'utf8');
+    const results = await readFile(this.preferencesFile.fsPath, 'utf8');
     this.preferencesJson = jsonc.parse(results) as IPreferencesJson;
   }
 
   private async writePreferences(): Promise<void> {
     if (this.preferencesFile === undefined) {
-      const configFilePath = Preferences.getPrefrencesFilePath(this.workspace.uri.fsPath);
+      const configFilePath = Preferences.getPreferencesFilePath(this.workspace.uri.fsPath);
       this.preferencesFile = vscode.Uri.file(configFilePath);
-      await mkdirAsync(path.dirname(this.preferencesFile.fsPath));
+      await mkdir(path.dirname(this.preferencesFile.fsPath), { recursive: true });
     }
-    await writeFileAsync(this.preferencesFile.fsPath, JSON.stringify(this.preferencesJson, null, 4));
+    await writeFile(this.preferencesFile.fsPath, JSON.stringify(this.preferencesJson, null, 4));
   }
 
   private async noTeamNumberLogic(): Promise<number> {

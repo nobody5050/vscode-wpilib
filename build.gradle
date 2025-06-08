@@ -43,7 +43,6 @@ dependencies {
     javaSource 'edu.wpi.first.wpilibj:commands:+:@zip'
 }
 
-
 task extractCppDependencies(type: Copy) {
     dependsOn configurations.cppSource
 
@@ -103,26 +102,9 @@ task copyFromVsCodeToStandaloneResources(type: Copy) {
     from ('vscode-wpilib/resources/vendordeps') {
         into 'vendordeps'
     }
-    into 'wpilib-utility-standalone/resources'
-}
-
-task copyFromVsCodeToStandaloneSrc(type: Copy) {
-    from ('vscode-wpilib/src/riolog/shared') {
-        into 'riolog/shared'
-    }
-    from ('vscode-wpilib/src/shared') {
-        into 'shared'
-    }
-    into 'wpilib-utility-standalone/src'
 }
 
 apply from: 'templatebuilder.gradle'
-
-
-task updateAllDependencies() {
-    dependsOn copyFromVsCodeToStandaloneResources
-    dependsOn copyFromVsCodeToStandaloneSrc
-}
 
 if (project.hasProperty("publishVersion")) {
     wpilibVersioning.version.set(project.publishVersion)
@@ -131,7 +113,6 @@ if (project.hasProperty("publishVersion")) {
 wpilibVersioning.version.finalizeValue()
 
 ext.pubVersion = wpilibVersioning.version.get()
-
 
 if (pubVersion == '') {
     pubVersion = '0.0.1-unknown'

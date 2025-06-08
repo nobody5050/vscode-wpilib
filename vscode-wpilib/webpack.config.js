@@ -1,62 +1,96 @@
-const path = require('path');
+const path = require("path");
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 /**@type {import('webpack').Configuration}*/
 module.exports = [
   {
-    mode: 'none',
+    mode: isDevelopment ? 'development' : 'production',
     entry: {
-      localeloader: './src/webviews/localeloader.ts',
-
-      gradle2020importpage: './src/webviews/pages/gradle2020importpage.ts',
-      projectcreatorpage: './src/webviews/pages/projectcreatorpage.ts',
-      riologpage: './src/riolog/shared/sharedscript.ts',
+      localeloader: "./src/webviews/localeloader.ts",
+      gradle2020importpage: "./src/webviews/pages/gradle2020importpage.ts",
+      projectcreatorpage: "./src/webviews/pages/projectcreatorpage.ts",
+      riologpage: ["./src/riolog/sharedscript.ts", "./src/riolog/script/implscript.ts"],
+      testSvelte: "./src/webviews/pages/test-svelte.ts",
+      helpComponent: "./src/webviews/pages/help-svelte.ts"
     },
-    devtool: 'inline-source-map',
+    devtool: isDevelopment ? 'inline-source-map' : 'source-map',
     module: {
       rules: [
         {
           test: /\.ts$/,
-          use: 'ts-loader',
+          use: "ts-loader",
+          exclude: /node_modules/
         },
         {
           test: /\.js$/,
           include: [/node_modules/],
         },
+        {
+          test: /\.svelte$/,
+          use: {
+            loader: 'svelte-loader',
+            options: {
+              compilerOptions: {
+                dev: isDevelopment
+              },
+              emitCss: false
+            }
+          }
+        },
+        {
+          test: /\.(png|jpg|jpeg|gif)$/i,
+          type: 'asset/resource',
+          generator: {
+            filename: 'assets/[name][ext]'
+          }
+        },
+        {
+          test: /\.svg$/,
+          use: [
+            {
+              loader: 'svg-url-loader',
+              options: {
+                limit: 10000,
+              },
+            },
+          ],
+        }
       ],
     },
     resolve: {
-      extensions: ['.ts', '.js'],
-    },
-    node: {
-      net: 'empty',
+      extensions: [".ts", ".js", ".svelte"],
+      modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+      conditionNames: ['svelte', 'browser', 'import', 'module', 'main'],
+      fallback: {
+        net: false,
+        timers: require.resolve("timers-browserify"),
+      },
     },
     output: {
-      path: path.resolve(__dirname, 'resources', 'dist'),
-      filename: '[name].js',
-      hashFunction: 'sha256',
+      path: path.resolve(__dirname, "resources", "dist"),
+      filename: "[name].js",
+      hashFunction: "sha256",
     },
   },
   {
-    target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-
-    entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+    target: "node",
+    mode: isDevelopment ? 'development' : 'production',
+    entry: "./src/extension.ts",
     output: {
-      // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-      path: path.resolve(__dirname, 'out'),
-      filename: 'extension.js',
-      libraryTarget: 'commonjs2',
-      devtoolModuleFilenameTemplate: '../[resource-path]',
-      hashFunction: 'sha256',
+      path: path.resolve(__dirname, "out"),
+      filename: "extension.js",
+      libraryTarget: "commonjs2",
+      devtoolModuleFilenameTemplate: "../[resource-path]",
+      hashFunction: "sha256",
     },
-    devtool: 'source-map',
+    devtool: isDevelopment ? 'inline-source-map' : 'source-map',
     externals: {
-      vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
+      vscode: "commonjs vscode",
     },
     resolve: {
-      // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-      extensions: ['.ts', '.js'],
+      extensions: [".ts", ".js"],
     },
-    node: false, // no polyfill for node context
+    node: false,
     module: {
       rules: [
         {
@@ -64,7 +98,7 @@ module.exports = [
           exclude: /node_modules/,
           use: [
             {
-              loader: 'ts-loader',
+              loader: "ts-loader",
             },
           ],
         },

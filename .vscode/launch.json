@@ -37,16 +37,12 @@
             "request": "launch",
             "name": "Standalone: Main",
             "protocol": "inspector",
-            "runtimeExecutable": "${workspaceFolder}/wpilib-utility-standalone/node_modules/.bin/electron",
             "runtimeArgs": [
                 "--remote-debugging-port=9223",
-                "wpilib-utility-standalone"
             ],
             "outFiles": [
-                "${workspaceFolder}/wpilib-utility-standalone/out/**/*.js"
             ],
             "windows": {
-                "runtimeExecutable": "${workspaceFolder}/wpilib-utility-standalone/node_modules/.bin/electron.cmd"
             },
             "preLaunchTask": "standalone-watch"
         },
@@ -55,7 +51,6 @@
             "type": "chrome",
             "request": "attach",
             "port": 9223,
-            "webRoot": "${workspaceFolder}/wpilib-utility-standalone",
             "timeout": 30000
         }
     ],
