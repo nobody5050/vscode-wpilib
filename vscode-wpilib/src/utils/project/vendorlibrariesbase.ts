@@ -1,11 +1,9 @@
 'use strict';
 
 import { access, mkdir, readdir, readFile, unlink, writeFile } from 'fs/promises';
-import * as fetch from 'node-fetch';
 import path from 'path';
 import { logger } from '../../logger';
 import { IUtilitiesAPI } from '../../wpilibapishim';
-import * as pathUtils from './pathUtils';
 
 export interface IJsonDependency {
   name: string;
@@ -57,7 +55,7 @@ export class VendorLibrariesBase {
   }
 
   public getVendorFolder(root: string): string {
-    return pathUtils.getVendorDepsPath(root);
+    return path.join(root, 'vendordeps');
   }
 
   public async installDependency(
@@ -138,18 +136,16 @@ export class VendorLibrariesBase {
 
   protected async loadFileFromUrl(url: string): Promise<IJsonDependency> {
     try {
-      const response = await fetch.default(url, {
-        timeout: 5000,
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(5000),
       });
 
       if (response === undefined) {
         throw new Error('Failed to fetch file');
       }
 
-      if (response.status >= 200 && response.status <= 300) {
-        const text = await response.text();
-        const json = JSON.parse(text);
-
+      if (response.ok) {
+        const json = await response.json();
         if (isJsonDependency(json)) {
           return json;
         } else {
