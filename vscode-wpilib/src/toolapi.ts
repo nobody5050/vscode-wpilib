@@ -1,6 +1,6 @@
 'use strict';
 import * as vscode from 'vscode';
-import { IExternalAPI, IToolAPI, IToolRunner } from 'vscode-wpilibapi';
+import { IExternalAPI, IToolAPI, IToolRunner } from './api';
 import { localize as i18n } from './utils/i18n/locale';
 import { logger } from './logger';
 import { gradleRun } from './utilities';

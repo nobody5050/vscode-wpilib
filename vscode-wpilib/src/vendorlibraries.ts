@@ -2,7 +2,7 @@
 
 import path from 'path';
 import * as vscode from 'vscode';
-import { IExternalAPI } from 'vscode-wpilibapi';
+import { IExternalAPI } from './api';
 import { logger } from './logger';
 import { deleteFileAsync, readdirAsync } from './utilities';
 import { localize as i18n } from './utils/i18n/locale';

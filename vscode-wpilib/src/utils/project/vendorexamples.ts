@@ -2,6 +2,8 @@
 
 import * as jsonc from 'jsonc-parser';
 import path from 'path';
+import * as vscode from 'vscode';
+import { IExampleTemplateAPI, IExampleTemplateCreator, IUtilitiesAPI } from '../../api';
 import { logger } from '../../logger';
 import {
   existsAsync,
@@ -10,8 +12,6 @@ import {
   readFileAsync,
   statAsync,
 } from '../../utilities';
-import * as vscode from '../../vscodeshim';
-import { IExampleTemplateAPI, IExampleTemplateCreator, IUtilitiesAPI } from '../../wpilibapishim';
 import { localize as i18n } from '../i18n/locale';
 import { generateCopyCpp, generateCopyJava } from './generator';
 import { VendorLibrariesBase } from './vendorlibrariesbase';

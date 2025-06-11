@@ -1,6 +1,6 @@
 'use strict';
 import * as vscode from 'vscode';
-import { ICodeDeployer, IDeployDebugAPI } from 'vscode-wpilibapi';
+import { ICodeDeployer, IDeployDebugAPI } from './api';
 import { RioLogWindow } from './riolog/riologwindow';
 import { localize as i18n } from './utils/i18n/locale';
 import { logger } from './logger';

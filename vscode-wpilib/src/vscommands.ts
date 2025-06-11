@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { IExternalAPI } from 'vscode-wpilibapi';
+import { IExternalAPI } from './api';
 import { downloadDocs } from './docsapi';
 import { localize as i18n } from './utils/i18n/locale';
 import { logger } from './logger';

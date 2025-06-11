@@ -7,19 +7,12 @@ import { logger } from '../../logger';
 import { ncpAsync, readFileAsync, writeFileAsync } from '../../utilities';
 
 /**
- * Filter function for copying files based on file extension
- */
-export interface IFileCopyFilter {
-  (sourcePath: string): boolean;
-}
-
-/**
  * Copy files from source to destination with optional filter
  */
 export async function copyFiles(
   sourceFolder: string,
   destinationFolder: string,
-  filter?: IFileCopyFilter,
+  filter?: (sourcePath: string) => boolean,
   trackCopiedFiles: boolean = false
 ): Promise<string[]> {
   const copiedFiles: string[] = [];
@@ -156,7 +149,7 @@ export async function renameFiles(
 /**
  * Filter that only includes specified file extensions
  */
-export function createFileExtensionFilter(extensions: string[]): IFileCopyFilter {
+export function createFileExtensionFilter(extensions: string[]) {
   return (sourcePath: string): boolean => {
     if (!fs.lstatSync(sourcePath).isFile()) {
       return true; // Always include directories
@@ -170,7 +163,7 @@ export function createFileExtensionFilter(extensions: string[]): IFileCopyFilter
 /**
  * Filter that only includes files with specific names
  */
-export function createFileNameFilter(fileNames: string[]): IFileCopyFilter {
+export function createFileNameFilter(fileNames: string[]) {
   return (sourcePath: string): boolean => {
     if (!fs.lstatSync(sourcePath).isFile()) {
       return true; // Always include directories

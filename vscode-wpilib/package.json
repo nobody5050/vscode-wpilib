@@ -591,7 +591,6 @@
         "vscode-cpptools": "^6.3.0",
         "vscode-jsonrpc": "^8.2.1",
         "vscode-nls": "^5.2.0",
-        "vscode-wpilibapi": "^2021.1.1",
         "winston": "^3.17.0",
         "winston-transport": "^4.9.0",
         "xml2js": "^0.6.2"
