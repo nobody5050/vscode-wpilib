@@ -40,7 +40,7 @@ export async function generateCopyCpp(
     await genUtils.setupProjectStructure(fromGradleFolder, toFolder, grRoot);
 
     // Update gradle file with correct version
-    const buildGradlePath = pathUtils.getBuildGradlePath(toFolder);
+    const buildGradlePath = path.join(toFolder, 'vendordeps');
     await genUtils.updateGradleRioVersion(buildGradlePath, gradleRioVersion);
 
     // Setup deploy directory
@@ -118,12 +118,11 @@ export async function generateCopyJava(
     await genUtils.setupProjectStructure(fromGradleFolder, toFolder, grRoot);
 
     // Update gradle file with correct version and robot class
-    const buildGradlePath = pathUtils.getBuildGradlePath(toFolder);
-    await pathUtils.updateFileContents(buildGradlePath, (content) => {
-      return content
+    await pathUtils.updateFileContents(path.join(toFolder, 'build.gradle'), (content) =>
+      content
         .replace(new RegExp(genUtils.ReplacementPatterns.ROBOT_CLASS_MARKER, 'g'), robotClassTo)
-        .replace(new RegExp(genUtils.ReplacementPatterns.GRADLE_RIO_MARKER, 'g'), gradleRioVersion);
-    });
+        .replace(new RegExp(genUtils.ReplacementPatterns.GRADLE_RIO_MARKER, 'g'), gradleRioVersion)
+    );
 
     // Setup deploy directory
     await genUtils.setupDeployDirectory(toFolder, directGradleImport, true);

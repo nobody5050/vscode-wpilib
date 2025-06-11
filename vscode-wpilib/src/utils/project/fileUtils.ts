@@ -5,7 +5,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { logger } from '../../logger';
 import { ncpAsync, readFileAsync, writeFileAsync } from '../../utilities';
-import * as pathUtils from './pathUtils';
 
 /**
  * Filter function for copying files based on file extension
@@ -83,7 +82,7 @@ export async function processFiles(
 ): Promise<boolean> {
   try {
     const promises = files.map(async (file) => {
-      const fullPath = pathUtils.joinPath(basePath, file);
+      const fullPath = path.join(basePath, file);
       await processFileContent(fullPath, replacements);
     });
 
@@ -109,14 +108,14 @@ export async function renameFiles(
   const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, 'g');
 
   for (const filePath of files) {
-    const fullPath = pathUtils.joinPath(basePath, filePath);
+    const fullPath = path.join(basePath, filePath);
     const filename = path.basename(fullPath);
 
     // Only rename files matching the pattern
     if (filename.match(regex)) {
       const directory = path.dirname(fullPath);
       const newName = filename.replace(regex, replacement);
-      const newPath = pathUtils.joinPath(directory, newName);
+      const newPath = path.join(directory, newName);
 
       renamePromises.push(
         new Promise<string>((resolve, reject) => {
