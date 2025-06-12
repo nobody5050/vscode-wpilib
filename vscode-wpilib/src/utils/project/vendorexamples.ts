@@ -12,7 +12,7 @@ import {
   readFileAsync,
   statAsync,
 } from '../../utilities';
-import { localize as i18n } from '../i18n/locale';
+import { localize as i18n } from '../l10n/locale';
 import { generateCopyCpp, generateCopyJava } from './generator';
 import { VendorLibrariesBase } from './vendorlibrariesbase';
 

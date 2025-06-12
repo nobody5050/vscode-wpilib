@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { ICodeBuilder, IExecuteAPI, IExternalAPI, IPreferencesAPI } from './api';
+import { ICodeBuilder, IExecuteAPI, IExternalAPI, IPreferencesAPI } from '../api';
 import { logger } from '../logger';
 import { gradleRun } from '../utilities';
 

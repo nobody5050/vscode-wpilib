@@ -4,7 +4,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { getCppToolsApi, Version } from 'vscode-cpptools';
-import { IExternalAPI } from './api';
+import { IExternalAPI } from '../api';
 import { ApiProvider } from './apiprovider';
 import { HeaderExplorer } from './headertreeprovider';
 import { createCommands } from './vscommands';
