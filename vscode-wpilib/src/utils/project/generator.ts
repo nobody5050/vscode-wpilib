@@ -4,12 +4,11 @@ import * as path from 'path';
 import { logger } from '../../logger';
 import * as pathUtils from './pathUtils';
 import * as genUtils from './projectGeneratorUtils';
-
-export type CopyCallback = genUtils.CopyCallback;
+import { ncpAsync } from '../../utilities';
 
 export async function generateCopyCpp(
   resourcesFolder: string,
-  fromTemplateFolder: string | CopyCallback,
+  fromTemplateFolder: string,
   fromTemplateTestFolder: string | undefined,
   fromGradleFolder: string,
   toFolder: string,
@@ -31,9 +30,9 @@ export async function generateCopyCpp(
     const gradleRioVersion = await genUtils.getGradleRioVersion(grRoot);
 
     // Copy template folders
-    await genUtils.copyTemplateFolder(fromTemplateFolder, codePath, toFolder);
+    await ncpAsync(fromTemplateFolder, codePath);
     if (fromTemplateTestFolder !== undefined) {
-      await genUtils.copyTemplateFolder(fromTemplateTestFolder, testPath, toFolder);
+      await ncpAsync(fromTemplateTestFolder, testPath);
     }
 
     // Setup project structure
@@ -58,7 +57,7 @@ export async function generateCopyCpp(
 
 export async function generateCopyJava(
   resourcesFolder: string,
-  fromTemplateFolder: string | CopyCallback,
+  fromTemplateFolder: string,
   fromTemplateTestFolder: string | undefined,
   fromGradleFolder: string,
   toFolder: string,
@@ -87,9 +86,9 @@ export async function generateCopyJava(
     const gradleRioVersion = await genUtils.getGradleRioVersion(grRoot);
 
     // Copy template folders
-    await genUtils.copyTemplateFolder(fromTemplateFolder, codePath, toFolder);
+    await ncpAsync(fromTemplateFolder, codePath);
     if (fromTemplateTestFolder !== undefined) {
-      await genUtils.copyTemplateFolder(fromTemplateTestFolder, testPath, toFolder);
+      await ncpAsync(fromTemplateTestFolder, testPath);
     }
 
     // Find files that need template processing

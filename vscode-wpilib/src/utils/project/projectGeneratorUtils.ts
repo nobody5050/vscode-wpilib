@@ -8,8 +8,6 @@ import { mkdirpAsync, ncpAsync, readFileAsync, writeFileAsync } from '../../util
 import { setExecutePermissions } from './permissions';
 import * as pathUtils from './pathUtils';
 
-export type CopyCallback = (srcFolder: string, rootFolder: string) => Promise<boolean>;
-
 /**
  * Common patterns used in text replacements
  */
@@ -109,28 +107,6 @@ export async function findMatchingFiles(
       }
     );
   });
-}
-
-/**
- * Copy source template folder to destination
- */
-export async function copyTemplateFolder(
-  sourceFolder: string | CopyCallback,
-  destinationPath: string,
-  rootFolder: string
-): Promise<boolean> {
-  try {
-    if (typeof sourceFolder === 'string') {
-      await ncpAsync(sourceFolder, destinationPath);
-    } else {
-      // Use the callback for custom copy logic
-      await sourceFolder(destinationPath, rootFolder);
-    }
-    return true;
-  } catch (error) {
-    logger.error(`Failed to copy template folder to ${destinationPath}`, error);
-    return false;
-  }
 }
 
 /**
