@@ -6,7 +6,7 @@
     "version": "0.1.0",
     "publisher": "wpilibsuite",
     "license": "BSD-3-Clause",
-    "icon": "wpilib-icon-128.png",
+    "icon": "resources/wpilib-icon-128.png",
     "engines": {
         "vscode": "^1.57.0"
     },
@@ -64,7 +64,7 @@
                 {
                     "id": "wpilib-vendordeps",
                     "title": "WPILib Vendor Dependencies",
-                    "icon": "resources/media/wpilib.png"
+                    "icon": "resources/wpilib-icon-128.png"
                 }
             ]
         },
@@ -431,7 +431,7 @@
                     "type": "webview",
                     "id": "wpilib.dependencyView",
                     "name": "WPILib Vendor Dependencies",
-                    "icon": "resources/media/wpilib.png"
+                    "icon": "resources/wpilib-icon-128.png"
                 }
             ]
         },
