@@ -34,18 +34,16 @@ async function performCopy(
     const headerFilter = fileUtils.createFileNameFilter(command.headers);
 
     // Copy source and header files
-    const copiedSrcFiles = await fileUtils.copyFiles(
+    const copiedSrcFiles = await fileUtils.copyAndReturnFiles(
       commandFolder,
       folderSrc.fsPath,
-      sourceFilter,
-      true
+      sourceFilter
     );
 
-    const copiedHeaderFiles = await fileUtils.copyFiles(
+    const copiedHeaderFiles = await fileUtils.copyAndReturnFiles(
       commandFolder,
       folderHeader.fsPath,
-      headerFilter,
-      true
+      headerFilter
     );
 
     // Process header files
