@@ -39,8 +39,9 @@ async function performCopy(
     replacements.set(new RegExp(command.replacename, 'g'), replaceName);
 
     // Process files with replacements
-    await fileUtils.processFiles(copiedFiles, folder.fsPath, replacements);
-
+    await Promise.all(
+      copiedFiles.map(async (file) => fileUtils.processFile(file, folder.fsPath, replacements))
+    );
     // Rename files
     const renamedFiles = await fileUtils.renameFiles(
       copiedFiles,

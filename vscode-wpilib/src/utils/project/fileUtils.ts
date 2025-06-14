@@ -34,33 +34,19 @@ export async function copyAndReturnFiles(
   return copiedFiles;
 }
 
-/**
- * Process multiple files with the same replacements
- */
-export async function processFiles(
-  files: string[],
+export async function processFile(
+  file: string,
   basePath: string,
   replacements: Map<string | RegExp, string>
-): Promise<boolean> {
-  try {
-    const promises = files.map(
-      async (file) =>
-        await updateFileContents(path.join(basePath, file), (content) => {
-          // Apply all replacements
-          for (const [pattern, replacement] of replacements) {
-            const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, 'g');
-            content = content.replace(regex, replacement);
-          }
-          return content;
-        })
-    );
-
-    await Promise.all(promises);
-    return true;
-  } catch (error) {
-    logger.error('Error processing files:', error);
-    return false;
-  }
+) {
+  return updateFileContents(path.join(basePath, file), (content) => {
+    // Apply all replacements
+    for (const [pattern, replacement] of replacements) {
+      const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, 'g');
+      content = content.replace(regex, replacement);
+    }
+    return content;
+  });
 }
 
 /**
