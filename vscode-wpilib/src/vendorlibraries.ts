@@ -3,10 +3,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IExternalAPI } from './api';
-import { logger } from './logger';
-import { deleteFileAsync, readdirAsync } from './utilities';
 import { localize as i18n } from './locale';
+import { logger } from './logger';
 import { IJsonDependency, VendorLibrariesBase } from './shared/vendorlibrariesbase';
+import { deleteFileAsync, readdirAsync } from './utilities';
 
 export class VendorLibraries extends VendorLibrariesBase {
   private disposables: vscode.Disposable[] = [];

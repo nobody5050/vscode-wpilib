@@ -149,18 +149,26 @@ export class RioLogHTMLProvider implements IHTMLProvider {
     const scriptPath = vscode.Uri.file(
       path.join(this.resourceRoot, '..', 'resources', 'dist', 'riologpage.js')
     );
-    const cssPath = vscode.Uri.file(
-      path.join(this.resourceRoot, '..', 'resources', 'media', 'main.css')
+    const elementsCssPath = vscode.Uri.file(
+      path.join(this.resourceRoot, '..', 'resources', 'media', 'vscode-elements.css')
+    );
+    const rioLogCssPath = vscode.Uri.file(
+      path.join(this.resourceRoot, '..', 'resources', 'media', 'riolog.css')
     );
 
     // Convert to webview URIs
     const scriptUri = webview.asWebviewUri(scriptPath);
-    const cssUri = webview.asWebviewUri(cssPath);
+    const elementsCssUri = webview.asWebviewUri(elementsCssPath);
+    const rioLogCssUri = webview.asWebviewUri(rioLogCssPath);
 
     let html = this.html!;
 
     // Add CSS link
-    html = html.replace('</head>', `<link rel="stylesheet" href="${cssUri}" />\r\n</head>`);
+    html = html.replace(
+      '</head>',
+      `<link rel="stylesheet" href="${elementsCssUri}" />
+      <link rel="stylesheet" href="${rioLogCssUri}" />\r\n</head>`
+    );
 
     // Add script with error handling
     html = html.replace(

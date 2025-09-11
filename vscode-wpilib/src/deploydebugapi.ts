@@ -1,11 +1,11 @@
 'use strict';
 import * as vscode from 'vscode';
 import { ICodeDeployer, IDeployDebugAPI } from './api';
+import { localize as i18n } from './locale';
 import { logger } from './logger';
 import { PreferencesAPI } from './preferencesapi';
 import { RioLogWindow } from './riolog/riologwindow';
 import { LiveRioConsoleProvider, RioLogWebviewProvider } from './riolog/vscodeimpl';
-import { localize as i18n } from './locale';
 
 interface ICodeDeployerQuickPick extends vscode.QuickPickItem {
   deployer: ICodeDeployer;

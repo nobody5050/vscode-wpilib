@@ -5,10 +5,10 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as xml2js from 'xml2js';
 import { IExternalAPI } from './api';
+import { localize as i18n } from './locale';
 import { logger } from './logger';
 import { PersistentFolderState } from './persistentState';
 import { existsAsync, readdirAsync, readFileAsync, writeFileAsync } from './utilities';
-import { localize as i18n } from './locale';
 import { isNewerVersion } from './versions';
 
 function getGradleRioRegex() {

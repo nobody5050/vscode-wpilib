@@ -1,9 +1,9 @@
 import * as fetch from 'node-fetch';
 import * as vscode from 'vscode';
 import { IExternalAPI } from './api';
+import { localize as i18n } from './locale';
 import { logger } from './logger';
 import { IProjectInfo, ProjectInfoGatherer } from './projectinfo';
-import { localize as i18n } from './locale';
 import { IJsonDependency } from './shared/vendorlibrariesbase';
 import { VendorLibraries } from './vendorlibraries';
 import { isNewerVersion } from './versions';
@@ -86,9 +86,7 @@ export class DependencyViewProvider implements vscode.WebviewViewProvider {
     }
 
     const prefs = this.externalApi.getPreferencesAPI().getPreferences(this.wp);
-    const projectYear = prefs.getProjectYear();
-    const isWPILib = prefs.getIsWPILibProject && prefs.getIsWPILibProject();
-    if (projectYear === 'none' || !isWPILib) {
+    if (prefs.getProjectYear() === 'none' || !prefs.getIsWPILibProject()) {
       webviewView.webview.html = `
         <html>
           <head>

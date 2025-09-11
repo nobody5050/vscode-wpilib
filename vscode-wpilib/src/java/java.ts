@@ -4,14 +4,14 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IExternalAPI } from '../api';
-import { existsAsync } from '../utilities';
+import { localize as i18n } from '../locale';
 import { Examples } from '../shared/examples';
 import { Templates } from '../shared/templates';
+import { existsAsync } from '../utilities';
 import { onVendorDepsChanged } from '../vendorlibraries';
 import { BuildTest } from './buildtest';
 import { Commands } from './commands';
 import { DeployDebug } from './deploydebug';
-import { localize as i18n } from '../locale';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

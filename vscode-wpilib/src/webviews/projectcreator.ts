@@ -2,10 +2,10 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { extensionContext, promptForProjectOpen } from '../utilities';
+import { IExampleTemplateAPI } from '../api';
 import { localize as i18n } from '../locale';
 import { setDesktopEnabled } from '../shared/generator';
-import { IExampleTemplateAPI } from '../api';
+import { extensionContext, promptForProjectOpen } from '../utilities';
 import {
   IProjectIPCData,
   IProjectIPCReceive,
