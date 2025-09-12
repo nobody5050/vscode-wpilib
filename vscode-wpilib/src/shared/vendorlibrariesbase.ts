@@ -1,7 +1,7 @@
 'use strict';
 
 import * as fetch from 'node-fetch';
-import path from 'path';
+import * as path from 'path';
 import { IUtilitiesAPI } from '../api';
 import { logger } from '../logger';
 import {

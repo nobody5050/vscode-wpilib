@@ -1,7 +1,7 @@
 'use strict';
 
 import * as jsonc from 'jsonc-parser';
-import path from 'path';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { IExampleTemplateAPI, IExampleTemplateCreator, IUtilitiesAPI } from '../api';
 import { logger } from '../logger';
